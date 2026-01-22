@@ -7,7 +7,7 @@ public class DeliveryBox
     public Guid Id { get; set; }
 
     public User User { get; set; } = null!;
-    public Guid UserId { get; set; }
+    public string UserId { get; set; } = null!;
 
     public DateOnly Month { get; set; }
     public DeliveryBoxStatus Status { get; set; }

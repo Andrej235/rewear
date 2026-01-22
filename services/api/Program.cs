@@ -82,7 +82,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, o => o.UseVector());
 
     if (isDevelopment)
         options.EnableSensitiveDataLogging();

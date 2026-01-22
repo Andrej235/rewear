@@ -24,4 +24,6 @@ public class ClothingItem
 
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    public ICollection<InventoryItem> InInventory { get; set; } = [];
 }

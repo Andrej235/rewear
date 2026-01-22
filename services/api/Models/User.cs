@@ -22,4 +22,6 @@ public class User : IdentityUser
     public Material AvoidedMaterials { get; set; }
 
     public DateTime CreatedAt { get; set; }
+
+    public ICollection<DeliveryBox> DeliveryBoxes { get; set; } = [];
 }
