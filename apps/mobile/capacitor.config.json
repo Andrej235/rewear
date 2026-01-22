@@ -1,0 +1,6 @@
+{
+  "appId": "com.mobile.app",
+  "appName": "mobile",
+  "webDir": "dist",
+  "plugins": {}
+}

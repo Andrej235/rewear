@@ -1,0 +1,4 @@
+{
+  "extends": "@repo/typescript-config/native.json",
+  "include": ["src"]
+}
