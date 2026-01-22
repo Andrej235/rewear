@@ -1,4 +1,4 @@
-namespace Template.Dtos.Response.User;
+namespace ReWear.Dtos.Response.User;
 
 public class UserResponseDto
 {

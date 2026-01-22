@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Template.Models;
-using Template.Services.ModelServices.UserService;
+using ReWear.Models;
+using ReWear.Services.ModelServices.UserService;
 
-namespace Template.Controllers.UserController;
+namespace ReWear.Controllers.UserController;
 
 [Route("users")]
 [ApiController]

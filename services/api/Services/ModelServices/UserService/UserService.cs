@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Identity;
-using Template.Dtos.Response.User;
-using Template.Models;
-using Template.Services.Delete;
-using Template.Services.Mapping.Response;
-using Template.Services.ModelServices.TokenService;
-using Template.Services.Read;
+using ReWear.Dtos.Response.User;
+using ReWear.Models;
+using ReWear.Services.Delete;
+using ReWear.Services.Mapping.Response;
+using ReWear.Services.ModelServices.TokenService;
+using ReWear.Services.Read;
 
-namespace Template.Services.ModelServices.UserService;
+namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService(
     UserManager<User> userManager,

@@ -1,4 +1,4 @@
-namespace Template.Dtos.Request.User;
+namespace ReWear.Dtos.Request.User;
 
 public class LogoutRequestDto
 {

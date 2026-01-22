@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace Template.Models;
+namespace ReWear.Models;
 
 public class User : IdentityUser { }

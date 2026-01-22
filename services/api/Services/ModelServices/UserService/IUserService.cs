@@ -1,9 +1,9 @@
 using System.Security.Claims;
 using FluentResults;
-using Template.Dtos.Request.User;
-using Template.Dtos.Response.User;
+using ReWear.Dtos.Request.User;
+using ReWear.Dtos.Response.User;
 
-namespace Template.Services.ModelServices.UserService;
+namespace ReWear.Services.ModelServices.UserService;
 
 public interface IUserService
 {

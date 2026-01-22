@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using FluentResults;
 
-namespace Template.Services.Read
+namespace ReWear.Services.Read
 {
     /// <summary>
     /// Represents a generic interface for getting multiple mapped entities from the database

@@ -1,4 +1,4 @@
-namespace Template.Models;
+namespace ReWear.Models;
 
 public class RefreshToken
 {

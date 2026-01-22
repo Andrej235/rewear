@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using FluentResults;
-using Template.Dtos.Response.User;
-using Template.Errors;
-using Template.Services.Read;
+using ReWear.Dtos.Response.User;
+using ReWear.Errors;
+using ReWear.Services.Read;
 
-namespace Template.Services.ModelServices.UserService;
+namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {

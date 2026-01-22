@@ -1,5 +1,5 @@
 using FluentResults;
 
-namespace Template.Errors;
+namespace ReWear.Errors;
 
 public class Forbidden(string message) : Error(message) { }

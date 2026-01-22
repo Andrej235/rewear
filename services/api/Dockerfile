@@ -9,17 +9,17 @@ USER app
 FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG configuration=Release
 WORKDIR /src
-COPY ["/Template.csproj", "/"]
-RUN dotnet restore "/Template.csproj"
+COPY ["/ReWear.csproj", "/"]
+RUN dotnet restore "/ReWear.csproj"
 COPY . .
 WORKDIR "/src/"
-RUN dotnet build "Template.csproj" -c $configuration -o /app/build
+RUN dotnet build "ReWear.csproj" -c $configuration -o /app/build
 
 FROM build AS publish
 ARG configuration=Release
-RUN dotnet publish "Template.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "ReWear.csproj" -c $configuration -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Template.dll"]
+ENTRYPOINT ["dotnet", "ReWear.dll"]

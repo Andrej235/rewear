@@ -1,10 +1,10 @@
 ﻿using System.Linq.Expressions;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
-using Template.Data;
-using Template.Errors;
+using ReWear.Data;
+using ReWear.Errors;
 
-namespace Template.Services.Delete
+namespace ReWear.Services.Delete
 {
     public class DeleteService<T>(DataContext context) : IDeleteService<T>
         where T : class

@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
 using FluentResults;
 
-namespace Template.Services.Delete
+namespace ReWear.Services.Delete
 {
     /// <summary>
     /// Represents a generic interface for deleting entities from the database

@@ -1,11 +1,11 @@
 ﻿using System.Linq.Expressions;
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
-using Template.Data;
-using Template.Errors;
-using Template.Utilities;
+using ReWear.Data;
+using ReWear.Errors;
+using ReWear.Utilities;
 
-namespace Template.Services.Read
+namespace ReWear.Services.Read
 {
     public class ReadService<TEntity>(DataContext context)
         : IReadSingleService<TEntity>,

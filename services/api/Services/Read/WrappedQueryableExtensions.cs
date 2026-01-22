@@ -1,9 +1,9 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Template.Services.Read;
+using ReWear.Services.Read;
 
-namespace Template.Services.Read
+namespace ReWear.Services.Read
 {
     public interface IWrappedResult<out TEntity>;
 

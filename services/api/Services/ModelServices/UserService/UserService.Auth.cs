@@ -1,12 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Web;
 using FluentResults;
-using Template.Dtos.Request.User;
-using Template.Dtos.Response.User;
-using Template.Errors;
-using Template.Models;
+using ReWear.Dtos.Request.User;
+using ReWear.Dtos.Response.User;
+using ReWear.Errors;
+using ReWear.Models;
 
-namespace Template.Services.ModelServices.UserService;
+namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {

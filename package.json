@@ -1,5 +1,5 @@
 {
-  "name": "create-app-stack",
+  "name": "rewear",
   "private": true,
   "scripts": {
     "build": "turbo run build",

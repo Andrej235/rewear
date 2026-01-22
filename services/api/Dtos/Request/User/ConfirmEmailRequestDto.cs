@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Template.Dtos.Request.User;
+namespace ReWear.Dtos.Request.User;
 
 public class ConfirmEmailRequestDto
 {

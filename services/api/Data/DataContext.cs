@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Template.Models;
+using ReWear.Models;
 
-namespace Template.Data;
+namespace ReWear.Data;
 
 public class DataContext(DbContextOptions<DataContext> options) : IdentityDbContext<User>(options)
 {

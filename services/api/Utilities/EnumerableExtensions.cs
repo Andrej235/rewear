@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Template.Utilities
+namespace ReWear.Utilities
 {
     public static class EnumerableExtensions
     {

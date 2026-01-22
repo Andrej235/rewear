@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Template.Dtos.Request.User;
-using Template.Dtos.Response.User;
-using Template.Utilities;
+using ReWear.Dtos.Request.User;
+using ReWear.Dtos.Response.User;
+using ReWear.Utilities;
 
-namespace Template.Controllers.UserController;
+namespace ReWear.Controllers.UserController;
 
 public partial class UserController
 {

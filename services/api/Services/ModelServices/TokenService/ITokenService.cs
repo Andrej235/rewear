@@ -1,7 +1,7 @@
 using System.Security.Claims;
-using Template.Models;
+using ReWear.Models;
 
-namespace Template.Services.ModelServices.TokenService;
+namespace ReWear.Services.ModelServices.TokenService;
 
 public interface ITokenService
 {

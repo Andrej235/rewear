@@ -10,20 +10,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Resend;
-using Template.Data;
-using Template.Dtos.Response.User;
-using Template.Exceptions;
-using Template.Models;
-using Template.Services.ConnectionMapper;
-using Template.Services.Create;
-using Template.Services.Delete;
-using Template.Services.EmailSender;
-using Template.Services.Mapping.Response;
-using Template.Services.Mapping.Response.UserMappers;
-using Template.Services.ModelServices.TokenService;
-using Template.Services.ModelServices.UserService;
-using Template.Services.Read;
-using Template.Utilities;
+using ReWear.Data;
+using ReWear.Dtos.Response.User;
+using ReWear.Exceptions;
+using ReWear.Models;
+using ReWear.Services.ConnectionMapper;
+using ReWear.Services.Create;
+using ReWear.Services.Delete;
+using ReWear.Services.EmailSender;
+using ReWear.Services.Mapping.Response;
+using ReWear.Services.Mapping.Response.UserMappers;
+using ReWear.Services.ModelServices.TokenService;
+using ReWear.Services.ModelServices.UserService;
+using ReWear.Services.Read;
+using ReWear.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 var isDevelopment = builder.Environment.IsDevelopment();
@@ -38,7 +38,7 @@ Directory.CreateDirectory(keysPath);
 builder
     .Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
-    .SetApplicationName("Template");
+    .SetApplicationName("ReWear");
 
 var configuration = builder.Configuration;
 builder.Services.AddSingleton(configuration);

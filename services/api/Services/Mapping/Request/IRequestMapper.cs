@@ -1,4 +1,4 @@
-﻿namespace Template.Services.Mapping.Request
+﻿namespace ReWear.Services.Mapping.Request
 {
     /// <summary>
     /// Represents a generic interface for mapping from a DTO to a domain model

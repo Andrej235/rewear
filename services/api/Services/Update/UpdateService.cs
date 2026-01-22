@@ -2,10 +2,10 @@
 using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
-using Template.Data;
-using Template.Errors;
+using ReWear.Data;
+using ReWear.Errors;
 
-namespace Template.Services.Update
+namespace ReWear.Services.Update
 {
     public class UpdateService<T>(DataContext context, ILogger<UpdateService<T>> logger)
         : IUpdateSingleService<T>,

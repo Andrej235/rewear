@@ -3,11 +3,11 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
-using Template.Models;
-using Template.Services.Create;
-using Template.Services.Delete;
+using ReWear.Models;
+using ReWear.Services.Create;
+using ReWear.Services.Delete;
 
-namespace Template.Services.ModelServices.TokenService;
+namespace ReWear.Services.ModelServices.TokenService;
 
 public class TokenService(
     IConfiguration configuration,
