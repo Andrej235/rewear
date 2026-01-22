@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Resend;
 using Template.Data;
 using Template.Dtos.Response.User;
@@ -86,6 +87,18 @@ builder.Services.AddDbContext<DataContext>(options =>
     if (isDevelopment)
         options.EnableSensitiveDataLogging();
 });
+
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.UseVector();
+await using var dataSource = dataSourceBuilder.Build();
+
+var connection = dataSource.OpenConnection();
+await using (var cmd = new NpgsqlCommand("CREATE EXTENSION IF NOT EXISTS vector", connection))
+{
+    await cmd.ExecuteNonQueryAsync();
+}
+
+connection.ReloadTypes();
 
 #region Identity / Auth
 builder.Services.AddAuthorization(options =>
