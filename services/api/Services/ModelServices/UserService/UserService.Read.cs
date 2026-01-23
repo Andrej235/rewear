@@ -43,7 +43,7 @@ public partial class UserService
             {
                 Id = u.Id,
                 Email = u.Email ?? "Unknown",
-                Name = u.UserName ?? "Unknown",
+                Username = u.UserName ?? "Unknown",
                 Verified = u.EmailConfirmed,
                 Role =
                     context
@@ -53,7 +53,7 @@ public partial class UserService
                 JoinedAt = u.CreatedAt,
             });
 
-            result = result.OrderBy(u => u.Name);
+            result = result.OrderBy(u => u.Username);
 
             return Result.Ok(
                 (await result.ApplyOffsetAndLimit(offset, limit, cancellationToken)).AsEnumerable()

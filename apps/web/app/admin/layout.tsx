@@ -27,7 +27,7 @@ export default async function RootAdminLayout({
         <SidebarInset>
           <AdminHeader />
 
-          <main className="h-full p-4">{children}</main>
+          <main className="relative h-full p-4">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </AppShell>
