@@ -359,18 +359,18 @@ export default function Page() {
                   <ContextMenuContent>
                     <ContextMenuItem
                       className="flex items-center gap-2"
-                      onClick={() => setEditingPlan(null)}
-                    >
-                      <X />
-                      <span>Discard Changes</span>
-                    </ContextMenuItem>
-
-                    <ContextMenuItem
-                      className="flex items-center gap-2"
                       onClick={handleEditPlan}
                     >
                       <Save />
                       <span>Save Changes</span>
+                    </ContextMenuItem>
+
+                    <ContextMenuItem
+                      className="flex items-center gap-2"
+                      onClick={() => setEditingPlan(null)}
+                    >
+                      <X />
+                      <span>Discard Changes</span>
                     </ContextMenuItem>
                   </ContextMenuContent>
                 )}

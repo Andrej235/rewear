@@ -2,6 +2,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -27,6 +30,7 @@ using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
 using ReWear.Services.ModelServices.UserService;
 using ReWear.Services.Read;
+using ReWear.Services.Storage;
 using ReWear.Services.Update;
 using ReWear.Utilities;
 
@@ -342,6 +346,21 @@ builder
 #region SignalR
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ConnectionMapper>();
+#endregion
+
+#region AWS S3
+AWSOptions awsOptions = new()
+{
+    Credentials = new BasicAWSCredentials(
+        builder.Configuration["AWS:AccessKey"],
+        builder.Configuration["AWS:SecretKey"]
+    ),
+    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]),
+};
+
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddScoped<IStorageService, S3StorageService>();
 #endregion
 
 var app = builder.Build();

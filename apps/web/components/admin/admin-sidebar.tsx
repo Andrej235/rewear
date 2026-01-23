@@ -42,7 +42,7 @@ const links: {
   },
   {
     title: "Subscription Plans",
-    url: "/admin/subscription-plan",
+    url: "/admin/subscription-plans",
     icon: CreditCard,
   },
   {
