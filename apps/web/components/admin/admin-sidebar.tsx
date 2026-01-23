@@ -17,7 +17,7 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@repo/ui/common/sidebar";
-import { ChevronRight, LucideIcon, Settings2 } from "lucide-react";
+import { ChevronRight, LucideIcon, Settings2, Users2 } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { NavUser } from "./nav-user";
@@ -33,6 +33,11 @@ const links: {
     title: "Dashboard",
     url: "/admin",
     icon: Settings2,
+  },
+  {
+    title: "Users",
+    url: "/admin/users",
+    icon: Users2,
   },
 ];
 
