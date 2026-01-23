@@ -14,6 +14,12 @@ public partial class UserController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public Task<OkResult> CheckAuth() => Task.FromResult(Ok());
 
+    [Authorize(Roles = Roles.Admin)]
+    [HttpGet("check-auth-admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public Task<OkResult> CheckAuthAdmin() => Task.FromResult(Ok());
+
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

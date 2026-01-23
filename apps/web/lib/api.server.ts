@@ -1,4 +1,4 @@
-import { createApi } from "@repo/lib/api/api";
+import { Api, createApi } from "@repo/lib/api/api";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
@@ -25,6 +25,14 @@ export const getApi = cache(() =>
 
     isLoggedIn: async (api) => {
       const { isOk } = await api.sendRequest("/users/check-auth", {
+        method: "get",
+      });
+
+      return isOk;
+    },
+
+    isAdmin: async (api: Api) => {
+      const { isOk } = await api.sendRequest("/users/check-auth-admin", {
         method: "get",
       });
 
