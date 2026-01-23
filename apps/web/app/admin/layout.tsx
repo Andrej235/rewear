@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ReactNode } from "react";
 import { AppShell } from "../../components/app-shell";
 import { getApi } from "../../lib/api.server";

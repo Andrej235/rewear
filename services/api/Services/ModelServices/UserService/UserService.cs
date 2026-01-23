@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using ReWear.Data;
 using ReWear.Dtos.Response.User;
 using ReWear.Models;
 using ReWear.Services.Delete;
@@ -15,7 +16,10 @@ public partial class UserService(
     ITokenService tokenService,
     IReadSingleService<RefreshToken> tokenReadService,
     IReadSingleService<User> userReadService,
+    IDeleteService<User> deleteService,
     IDeleteService<RefreshToken> tokenDeleteService,
     IResponseMapper<User, UserResponseDto> responseMapper,
-    IConfiguration configuration
+    IConfiguration configuration,
+    DataContext context,
+    ILogger<UserService> logger
 ) : IUserService;
