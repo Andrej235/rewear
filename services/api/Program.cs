@@ -61,14 +61,13 @@ builder.Services.Configure<ResendClientOptions>(options =>
 builder.Services.AddTransient<IResend, ResendClient>();
 
 builder.Services.AddOpenApi();
-if (isDevelopment)
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    builder.Services.AddSwaggerGen(options =>
-    {
-        options.SupportNonNullableReferenceTypes();
-        options.SwaggerDoc("v1", new() { Title = "API", Version = "v1" });
-    });
-}
+    options.SupportNonNullableReferenceTypes();
+    options.SwaggerDoc("v1", new() { Title = "API", Version = "v1" });
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {

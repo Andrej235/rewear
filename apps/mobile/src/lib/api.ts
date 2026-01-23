@@ -212,7 +212,7 @@ export const api = createApi({
         {
           method: "post",
           payload: {
-            refreshToken: refreshToken as never, // todo: fix type issue
+            refreshToken,
           },
         },
         {
