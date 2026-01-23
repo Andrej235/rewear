@@ -14,6 +14,13 @@ import {
 import { Button } from "@repo/ui/common/button";
 import { Checkbox } from "@repo/ui/common/checkbox";
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@repo/ui/common/context-menu";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -39,7 +46,7 @@ import {
 } from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
-import { Edit2, EllipsisVertical, Plus, Save, Trash2 } from "lucide-react";
+import { Edit2, EllipsisVertical, Plus, Save, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { api } from "../../../lib/api.client";
@@ -177,7 +184,13 @@ export default function Page() {
         <PageTitle>Subscription Plans</PageTitle>
         <PageDescription>Manage available subscription plans</PageDescription>
 
-        <PageAction>
+        <PageAction className="space-x-2">
+          {editingPlan && (
+            <Button variant="outline" onClick={() => setEditingPlan(null)}>
+              <span>Discard Changes</span>
+              <X className="ml-2" />
+            </Button>
+          )}
           <Button onClick={handleAddEmpty}>
             <span>New</span>
             <Plus className="ml-2" />
@@ -189,7 +202,8 @@ export default function Page() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-5/14">Name</TableHead>
+              <TableHead className="w-3/14">Name</TableHead>
+              <TableHead className="w-1/7">Subscriptions</TableHead>
               <TableHead className="w-1/7">Monthly Price</TableHead>
               <TableHead className="w-1/7">Allows Outerwear</TableHead>
               <TableHead className="w-1/7">Allows Shoes</TableHead>
@@ -200,114 +214,167 @@ export default function Page() {
 
           <TableBody>
             {plans.data?.map((plan) => (
-              <TableRow key={plan.id}>
-                {editingPlan?.id !== plan.id && (
-                  <>
-                    <TableCell>{plan.name}</TableCell>
-                    <TableCell>${plan.monthlyPrice.toFixed(2)}</TableCell>
-                    <TableCell>{plan.allowsOuterwear ? "Yes" : "No"}</TableCell>
-                    <TableCell>{plan.allowsShoes ? "Yes" : "No"}</TableCell>
-                    <TableCell>{plan.maxItemsPerMonth}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <EllipsisVertical />
-                        </DropdownMenuTrigger>
+              <ContextMenu key={plan.id}>
+                <ContextMenuTrigger asChild>
+                  <TableRow>
+                    {editingPlan?.id !== plan.id && (
+                      <>
+                        <TableCell>{plan.name}</TableCell>
+                        <TableCell>{plan.subscriptionsCount}</TableCell>
+                        <TableCell>${plan.monthlyPrice.toFixed(2)}</TableCell>
+                        <TableCell>
+                          {plan.allowsOuterwear ? "Yes" : "No"}
+                        </TableCell>
+                        <TableCell>{plan.allowsShoes ? "Yes" : "No"}</TableCell>
+                        <TableCell>{plan.maxItemsPerMonth}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger>
+                              <EllipsisVertical />
+                            </DropdownMenuTrigger>
 
-                        <DropdownMenuContent>
-                          <DropdownMenuItem
-                            className="flex items-center gap-2"
-                            onClick={() => setEditingPlan(plan)}
-                          >
-                            <Edit2 />
-                            <span>Edit Plan</span>
-                          </DropdownMenuItem>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                className="flex items-center gap-2"
+                                onClick={() => setEditingPlan(plan)}
+                              >
+                                <Edit2 />
+                                <span>Edit Plan</span>
+                              </DropdownMenuItem>
 
-                          <DropdownMenuSeparator />
+                              <DropdownMenuSeparator />
 
-                          <DropdownMenuItem
-                            variant="destructive"
-                            className="flex items-center gap-2"
-                            onClick={() => setDeletingPlan(plan)}
-                          >
-                            <Trash2 />
-                            <span>Delete Plan</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </>
+                              <DropdownMenuItem
+                                variant="destructive"
+                                className="flex items-center gap-2"
+                                onClick={() => setDeletingPlan(plan)}
+                              >
+                                <Trash2 />
+                                <span>Delete Plan</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </>
+                    )}
+
+                    {editingPlan?.id === plan.id && (
+                      <>
+                        <TableCell>
+                          <Input
+                            type="text"
+                            value={editingPlan.name}
+                            onChange={(e) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                name: e.target.value,
+                              })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {plan.subscriptionsCount}
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={editingPlan.monthlyPrice}
+                            onChange={(e) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                monthlyPrice: Number(e.target.value),
+                              })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Checkbox
+                            checked={editingPlan.allowsOuterwear}
+                            onCheckedChange={(checked) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                allowsOuterwear: !!checked,
+                              })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Checkbox
+                            checked={editingPlan.allowsShoes}
+                            onCheckedChange={(checked) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                allowsShoes: !!checked,
+                              })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            value={editingPlan.maxItemsPerMonth}
+                            onChange={(e) =>
+                              setEditingPlan({
+                                ...editingPlan,
+                                maxItemsPerMonth: Number(e.target.value),
+                              })
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="outline" onClick={handleEditPlan}>
+                            <Save />
+                            <span>Save</span>
+                          </Button>
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                </ContextMenuTrigger>
+
+                {!editingPlan && (
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      className="flex items-center gap-2"
+                      onClick={() => setEditingPlan(plan)}
+                    >
+                      <Edit2 />
+                      <span>Edit Plan</span>
+                    </ContextMenuItem>
+
+                    <ContextMenuSeparator />
+
+                    <ContextMenuItem
+                      variant="destructive"
+                      className="flex items-center gap-2"
+                      onClick={() => setDeletingPlan(plan)}
+                    >
+                      <Trash2 />
+                      <span>Delete Plan</span>
+                    </ContextMenuItem>
+                  </ContextMenuContent>
                 )}
 
-                {editingPlan?.id === plan.id && (
-                  <>
-                    <TableCell>
-                      <Input
-                        type="text"
-                        value={editingPlan.name}
-                        onChange={(e) =>
-                          setEditingPlan({
-                            ...editingPlan,
-                            name: e.target.value,
-                          })
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={editingPlan.monthlyPrice}
-                        onChange={(e) =>
-                          setEditingPlan({
-                            ...editingPlan,
-                            monthlyPrice: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Checkbox
-                        checked={editingPlan.allowsOuterwear}
-                        onCheckedChange={(checked) =>
-                          setEditingPlan({
-                            ...editingPlan,
-                            allowsOuterwear: !!checked,
-                          })
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Checkbox
-                        checked={editingPlan.allowsShoes}
-                        onCheckedChange={(checked) =>
-                          setEditingPlan({
-                            ...editingPlan,
-                            allowsShoes: !!checked,
-                          })
-                        }
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={editingPlan.maxItemsPerMonth}
-                        onChange={(e) =>
-                          setEditingPlan({
-                            ...editingPlan,
-                            maxItemsPerMonth: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="outline" onClick={handleEditPlan}>
-                        <Save />
-                        <span>Save</span>
-                      </Button>
-                    </TableCell>
-                  </>
+                {editingPlan && (
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      className="flex items-center gap-2"
+                      onClick={() => setEditingPlan(null)}
+                    >
+                      <X />
+                      <span>Discard Changes</span>
+                    </ContextMenuItem>
+
+                    <ContextMenuItem
+                      className="flex items-center gap-2"
+                      onClick={handleEditPlan}
+                    >
+                      <Save />
+                      <span>Save Changes</span>
+                    </ContextMenuItem>
+                  </ContextMenuContent>
                 )}
-              </TableRow>
+              </ContextMenu>
             ))}
           </TableBody>
         </Table>
