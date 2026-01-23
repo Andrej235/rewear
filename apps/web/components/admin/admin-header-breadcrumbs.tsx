@@ -25,7 +25,11 @@ type TBreadcrumbItem = {
 
 export function AdminHeaderBreadcrumbs() {
   const pathname = usePathname();
-  const pieces = pathname.replace("/admin", "").split("/").filter(Boolean);
+  const pieces = pathname
+    .replace("/admin", "")
+    .replace(/-/g, " ")
+    .split("/")
+    .filter(Boolean);
   const items: TBreadcrumbItem[] =
     pieces.length === 0
       ? [
