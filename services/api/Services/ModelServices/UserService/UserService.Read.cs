@@ -50,6 +50,7 @@ public partial class UserService
                         .UserRoles.Where(ur => ur.UserId == u.Id)
                         .Join(context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
                         .FirstOrDefault() ?? "No Role",
+                JoinedAt = u.CreatedAt,
             });
 
             result = result.OrderBy(u => u.Name);

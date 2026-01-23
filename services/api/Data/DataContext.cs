@@ -140,7 +140,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
 
             subscription
                 .HasOne<SubscriptionPlan>()
-                .WithMany()
+                .WithMany(x => x.Subscriptions)
                 .HasForeignKey(x => x.SubscriptionPlanId)
                 .OnDelete(DeleteBehavior.Restrict);
         });

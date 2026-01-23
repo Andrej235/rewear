@@ -1,6 +1,6 @@
-namespace ReWear.Models;
+namespace ReWear.Dtos.Request.SubscriptionPlan;
 
-public class SubscriptionPlan
+public class UpdateSubscriptionPlanRequestDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = null!;
@@ -10,6 +10,4 @@ public class SubscriptionPlan
     public int MaxItemsPerMonth { get; set; }
     public bool AllowsOuterwear { get; set; }
     public bool AllowsShoes { get; set; }
-
-    public ICollection<UserSubscription> Subscriptions { get; set; } = [];
 }

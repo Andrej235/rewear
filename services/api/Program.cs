@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Resend;
 using ReWear.Data;
+using ReWear.Dtos.Request.SubscriptionPlan;
 using ReWear.Dtos.Response.User;
 using ReWear.Exceptions;
 using ReWear.Models;
@@ -18,11 +19,15 @@ using ReWear.Services.ConnectionMapper;
 using ReWear.Services.Create;
 using ReWear.Services.Delete;
 using ReWear.Services.EmailSender;
+using ReWear.Services.Mapping.Request;
+using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
 using ReWear.Services.Mapping.Response;
 using ReWear.Services.Mapping.Response.UserMappers;
+using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
 using ReWear.Services.ModelServices.UserService;
 using ReWear.Services.Read;
+using ReWear.Services.Update;
 using ReWear.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -282,6 +287,7 @@ builder.Services.AddCors(options =>
 #region User
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReadSingleService<User>, ReadService<User>>();
+builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
 builder.Services.AddScoped<IResponseMapper<User, UserResponseDto>, UserResponseMapper>();
 #endregion
 
@@ -290,6 +296,35 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICreateSingleService<RefreshToken>, CreateService<RefreshToken>>();
 builder.Services.AddScoped<IReadSingleService<RefreshToken>, ReadService<RefreshToken>>();
 builder.Services.AddScoped<IDeleteService<RefreshToken>, DeleteService<RefreshToken>>();
+#endregion
+
+#region SubscriptionPlan
+builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+builder.Services.AddScoped<
+    ICreateSingleService<SubscriptionPlan>,
+    CreateService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<
+    IReadSingleSelectedService<SubscriptionPlan>,
+    ReadService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<
+    IReadRangeSelectedService<SubscriptionPlan>,
+    ReadService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<
+    IUpdateSingleService<SubscriptionPlan>,
+    UpdateService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<IDeleteService<SubscriptionPlan>, DeleteService<SubscriptionPlan>>();
+builder.Services.AddScoped<
+    IRequestMapper<CreateSubscriptionPlanRequestDto, SubscriptionPlan>,
+    CreateSubscriptionPlanRequestMapper
+>();
+builder.Services.AddScoped<
+    IRequestMapper<UpdateSubscriptionPlanRequestDto, SubscriptionPlan>,
+    UpdateSubscriptionPlanRequestMapper
+>();
 #endregion
 
 #endregion
