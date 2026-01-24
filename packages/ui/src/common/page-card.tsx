@@ -14,7 +14,7 @@ function PageCard({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <Card
       className={cn(
-        "min-h-screen min-w-0 border-none bg-transparent shadow-none",
+        "min-h-full min-w-0 border-none bg-transparent py-2 shadow-none md:py-6",
         className,
       )}
       {...props}
@@ -23,17 +23,26 @@ function PageCard({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function PageHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <CardHeader className={cn("gap-y-0.5", className)} {...props} />;
+  return (
+    <CardHeader
+      className={cn("gap-y-0.5 px-2 md:px-6", className)}
+      {...props}
+    />
+  );
 }
 
 function PageTitle({ className, ...props }: React.ComponentProps<"div">) {
   return <CardTitle className={cn("text-xl", className)} {...props} />;
 }
 
+function PageContent({ className, ...props }: React.ComponentProps<"div">) {
+  return <CardContent className={cn("px-2 md:px-6", className)} {...props} />;
+}
+
 export {
   CardAction as PageAction,
   PageCard,
-  CardContent as PageContent,
+  PageContent,
   CardDescription as PageDescription,
   CardFooter as PageFooter,
   PageHeader,
