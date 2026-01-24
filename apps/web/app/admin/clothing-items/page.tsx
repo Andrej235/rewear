@@ -52,7 +52,14 @@ import {
 } from "@repo/ui/common/tooltip";
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
-import { Dot, Edit2, EllipsisVertical, Plus, Trash2 } from "lucide-react";
+import {
+  Dot,
+  Edit2,
+  EllipsisVertical,
+  Layers,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -176,6 +183,18 @@ export default function ClothingItemsPage() {
                             </Link>
                           </DropdownMenuItem>
 
+                          <DropdownMenuItem
+                            asChild
+                            className="flex items-center gap-2"
+                          >
+                            <Link
+                              href={`/admin/clothing-items/${item.id}/inventory`}
+                            >
+                              <Layers />
+                              <span>Edit Inventory</span>
+                            </Link>
+                          </DropdownMenuItem>
+
                           <DropdownMenuSeparator />
 
                           <DropdownMenuItem
@@ -266,6 +285,13 @@ export default function ClothingItemsPage() {
                   <Link href={`/admin/clothing-items/${item.id}`}>
                     <Edit2 />
                     <span>Edit Item</span>
+                  </Link>
+                </ContextMenuItem>
+
+                <ContextMenuItem asChild className="flex items-center gap-2">
+                  <Link href={`/admin/clothing-items/${item.id}/inventory`}>
+                    <Layers />
+                    <span>Edit Inventory</span>
                   </Link>
                 </ContextMenuItem>
 

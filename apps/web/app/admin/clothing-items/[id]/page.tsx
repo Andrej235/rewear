@@ -1,4 +1,5 @@
 "use client";
+import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
 import { Button } from "@repo/ui/common/button";
 import {
@@ -10,12 +11,22 @@ import {
   PageTitle,
 } from "@repo/ui/common/page-card";
 import { LoadingScreen } from "@repo/ui/loading-screen";
-import { Save } from "lucide-react";
-import { notFound, useParams } from "next/navigation";
+import { Layers, Save } from "lucide-react";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { ClothingItemEditor } from "../../../../components/admin/clothing-item-editor";
 import { api } from "../../../../lib/api.client";
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Schema } from "@repo/lib/api/types/schema/schema-parser";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/common/alert-dialog";
+import Link from "next/link";
 
 export default function ClothingItemPage() {
   const { id } = useParams();
@@ -33,6 +44,8 @@ export default function ClothingItemPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const changedData = useRef(false);
   const changedImage = useRef(false);
+  const [confirmDiscardDialogOpen, setConfirmDiscardDialogOpen] =
+    useState(false);
 
   useEffect(() => {
     if (!originalItem.data) return;
@@ -43,7 +56,7 @@ export default function ClothingItemPage() {
     e.preventDefault();
 
     if (changedData.current) {
-      await api.sendRequest(
+      const { isOk } = await api.sendRequest(
         "/clothing-items",
         {
           method: "put",
@@ -60,10 +73,12 @@ export default function ClothingItemPage() {
           },
         },
       );
+
+      if (isOk) changedData.current = false;
     }
 
     if (changedImage.current && imageFile) {
-      await api.sendRequest(
+      const { isOk } = await api.sendRequest(
         "/clothing-items/{id}/image",
         {
           method: "patch",
@@ -88,7 +103,19 @@ export default function ClothingItemPage() {
           },
         },
       );
+
+      if (isOk) changedImage.current = false;
     }
+  }
+
+  const router = useRouter();
+  function handleOpenInventoryEditor() {
+    if (changedData.current || changedImage.current) {
+      setConfirmDiscardDialogOpen(true);
+      return;
+    }
+
+    router.push(`/admin/clothing-items/${id}/inventory`);
   }
 
   if (originalItem.isLoading) return <LoadingScreen />;
@@ -100,12 +127,21 @@ export default function ClothingItemPage() {
     <form className="h-full w-full" onSubmit={handleSubmit}>
       <PageCard>
         <PageHeader>
-          <PageTitle>New Clothing Item</PageTitle>
+          <PageTitle>Edit "{originalItem.data.name}"</PageTitle>
           <PageDescription>
-            Create a new clothing item to be available in the store.
+            Modify the details of this clothing item.
           </PageDescription>
 
-          <PageAction>
+          <PageAction className="space-x-2">
+            <Button
+              variant="secondary"
+              onClick={handleOpenInventoryEditor}
+              type="button"
+            >
+              <span>Edit Inventory</span>
+              <Layers className="ml-2" />
+            </Button>
+
             <Button type="submit">
               <span>Save</span>
               <Save className="ml-2" />
@@ -128,6 +164,27 @@ export default function ClothingItemPage() {
           />
         </PageContent>
       </PageCard>
+
+      <AlertDialog
+        open={confirmDiscardDialogOpen}
+        onOpenChange={setConfirmDiscardDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
+            <AlertDialogDescription>
+              All unsaved changes will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Stay</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Link href={`/admin/clothing-items/${id}/inventory`}>Leave</Link>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </form>
   );
 }
