@@ -1,5 +1,6 @@
 using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Models;
+using ReWear.Utilities;
 
 namespace ReWear.Services.Mapping.Request.ClothingItemMappers;
 
@@ -17,9 +18,9 @@ public class UpdateClothingItemRequestMapper
             GenderTarget = from.GenderTarget,
 
             PrimaryStyle = from.PrimaryStyle,
-            SecondaryStyles = from.SecondaryStyles,
+            SecondaryStyles = from.SecondaryStyles.ParseFlags(),
 
-            Colors = from.Colors,
+            Colors = from.Colors.ParseFlags(),
             FitType = from.FitType,
             Season = from.Season,
 

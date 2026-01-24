@@ -122,7 +122,7 @@ export default function ClothingItemsPage() {
           {items.data?.map((item) => (
             <ContextMenu key={item.id}>
               <ContextMenuTrigger>
-                <Card className="gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
+                <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
                   <Image
                     src={item.imageUrl}
                     alt={item.name}
@@ -142,10 +142,19 @@ export default function ClothingItemsPage() {
                       </Link>
                     </CardTitle>
 
-                    <CardDescription className="flex items-center capitalize">
-                      <span>{item.brandName || "No Brand"}</span>{" "}
+                    <CardDescription className="flex min-w-0 items-center">
+                      <span className="max-w-2/3 truncate">
+                        {item.brandName || "No brand"}
+                      </span>{" "}
                       <Dot className="-mx-1 inline" />{" "}
-                      <span>{item.genderTarget}</span>
+                      {item.genderTarget === "none" && (
+                        <Badge variant="destructive">No gender specified</Badge>
+                      )}
+                      {item.genderTarget !== "none" && (
+                        <Badge variant="outline" className="capitalize">
+                          {item.genderTarget}
+                        </Badge>
+                      )}
                     </CardDescription>
 
                     <CardAction>
@@ -182,7 +191,7 @@ export default function ClothingItemsPage() {
                     </CardAction>
                   </CardHeader>
 
-                  <CardContent className="space-y-4 capitalize">
+                  <CardContent className="flex-1 space-y-4 capitalize">
                     <div className="flex max-w-full flex-wrap gap-2">
                       {item.fitType !== "none" && <Badge>{item.fitType}</Badge>}
 
@@ -225,8 +234,8 @@ export default function ClothingItemsPage() {
                       )}
                     </div>
 
-                    <p className="text-sm">
-                      {item.description.slice(0, 100) || "No description"}
+                    <p className="max-w-full text-sm text-wrap wrap-anywhere">
+                      {item.description.slice(0, 200) || "No description"}
                     </p>
                   </CardContent>
 
