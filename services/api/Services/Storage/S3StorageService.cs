@@ -10,6 +10,10 @@ public class S3StorageService(IAmazonS3 s3Client, IConfiguration configuration) 
         configuration["AWS:BucketName"]
         ?? throw new ArgumentNullException("AWS:BucketName missing in configuration");
 
+    private readonly string region =
+        configuration["AWS:Region"]
+        ?? throw new ArgumentNullException("AWS:Region missing in configuration");
+
     public async Task<string> SaveAsync(string key, Stream fileStream, string contentType)
     {
         var putRequest = new PutObjectRequest
@@ -24,7 +28,7 @@ public class S3StorageService(IAmazonS3 s3Client, IConfiguration configuration) 
         return key;
     }
 
-    public Task<string> GetUrlAsync(string key, TimeSpan? expiresIn = null)
+    public Task<string> GetSignedUrlAsync(string key, TimeSpan? expiresIn = null)
     {
         var request = new GetPreSignedUrlRequest
         {
@@ -35,6 +39,11 @@ public class S3StorageService(IAmazonS3 s3Client, IConfiguration configuration) 
 
         string url = s3Client.GetPreSignedURL(request);
         return Task.FromResult(url);
+    }
+
+    public Task<string> GetPublicUrlAsync(string key, TimeSpan? expiresIn = null)
+    {
+        return Task.FromResult($"https://{bucketName}.s3.{region}.amazonaws.com/{key}");
     }
 
     public async Task DeleteAsync(string key)

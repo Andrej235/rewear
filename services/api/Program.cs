@@ -14,6 +14,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Resend;
 using ReWear.Data;
+using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Request.SubscriptionPlan;
 using ReWear.Dtos.Response.User;
 using ReWear.Exceptions;
@@ -23,9 +24,11 @@ using ReWear.Services.Create;
 using ReWear.Services.Delete;
 using ReWear.Services.EmailSender;
 using ReWear.Services.Mapping.Request;
+using ReWear.Services.Mapping.Request.ClothingItemMappers;
 using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
 using ReWear.Services.Mapping.Response;
 using ReWear.Services.Mapping.Response.UserMappers;
+using ReWear.Services.ModelServices.ClothingItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
 using ReWear.Services.ModelServices.UserService;
@@ -327,6 +330,24 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IRequestMapper<UpdateSubscriptionPlanRequestDto, SubscriptionPlan>,
     UpdateSubscriptionPlanRequestMapper
+>();
+#endregion
+
+#region ClothingItem
+builder.Services.AddScoped<IClothingItemService, ClothingItemService>();
+builder.Services.AddScoped<ICreateSingleService<ClothingItem>, CreateService<ClothingItem>>();
+builder.Services.AddScoped<IReadSingleSelectedService<ClothingItem>, ReadService<ClothingItem>>();
+builder.Services.AddScoped<IReadRangeSelectedService<ClothingItem>, ReadService<ClothingItem>>();
+builder.Services.AddScoped<IUpdateSingleService<ClothingItem>, UpdateService<ClothingItem>>();
+builder.Services.AddScoped<IExecuteUpdateService<ClothingItem>, UpdateService<ClothingItem>>();
+builder.Services.AddScoped<IDeleteService<ClothingItem>, DeleteService<ClothingItem>>();
+builder.Services.AddScoped<
+    IRequestMapper<CreateClothingItemRequestDto, ClothingItem>,
+    CreateClothingItemRequestMapper
+>();
+builder.Services.AddScoped<
+    IRequestMapper<UpdateClothingItemRequestDto, ClothingItem>,
+    UpdateClothingItemRequestMapper
 >();
 #endregion
 
