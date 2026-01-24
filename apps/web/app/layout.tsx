@@ -1,5 +1,6 @@
 import { Toaster } from "@repo/ui/common/sonner";
 import "@repo/ui/globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { Roboto, Roboto_Slab } from "next/font/google";
@@ -43,6 +44,8 @@ export default function RootLayout({
 
           <Toaster richColors />
         </QueryProvider>
+
+        <Analytics />
       </body>
     </html>
   );
