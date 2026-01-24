@@ -15,6 +15,7 @@ using Npgsql;
 using Resend;
 using ReWear.Data;
 using ReWear.Dtos.Request.ClothingItem;
+using ReWear.Dtos.Request.InventoryItem;
 using ReWear.Dtos.Request.SubscriptionPlan;
 using ReWear.Dtos.Response.User;
 using ReWear.Exceptions;
@@ -25,10 +26,12 @@ using ReWear.Services.Delete;
 using ReWear.Services.EmailSender;
 using ReWear.Services.Mapping.Request;
 using ReWear.Services.Mapping.Request.ClothingItemMappers;
+using ReWear.Services.Mapping.Request.InventoryItemMappers;
 using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
 using ReWear.Services.Mapping.Response;
 using ReWear.Services.Mapping.Response.UserMappers;
 using ReWear.Services.ModelServices.ClothingItemService;
+using ReWear.Services.ModelServices.InventoryItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
 using ReWear.Services.ModelServices.UserService;
@@ -348,6 +351,17 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IRequestMapper<UpdateClothingItemRequestDto, ClothingItem>,
     UpdateClothingItemRequestMapper
+>();
+#endregion
+
+
+#region InventoryItem
+builder.Services.AddScoped<IInventoryItemService, InventoryItemService>();
+builder.Services.AddScoped<ICreateRangeService<InventoryItem>, CreateService<InventoryItem>>();
+builder.Services.AddScoped<IReadRangeSelectedService<InventoryItem>, ReadService<InventoryItem>>();
+builder.Services.AddScoped<
+    IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>>,
+    AddStockRequestMapper
 >();
 #endregion
 
