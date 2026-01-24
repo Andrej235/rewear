@@ -22,6 +22,7 @@ import {
   CreditCard,
   LucideIcon,
   Settings2,
+  Shirt,
   Users2,
 } from "lucide-react";
 import Link from "next/link";
@@ -39,6 +40,11 @@ const links: {
     title: "Dashboard",
     url: "/admin",
     icon: Settings2,
+  },
+  {
+    title: "Clothing Items",
+    url: "/admin/clothing-items",
+    icon: Shirt,
   },
   {
     title: "Subscription Plans",

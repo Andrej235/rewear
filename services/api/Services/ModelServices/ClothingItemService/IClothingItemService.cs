@@ -6,10 +6,7 @@ namespace ReWear.Services.ModelServices.ClothingItemService;
 
 public interface IClothingItemService
 {
-    Task<Result<AdminClothingItemResponseDto>> Create(
-        CreateClothingItemRequestDto request,
-        IFormFile imageStream
-    );
+    Task<Result<AdminClothingItemResponseDto>> Create(CreateClothingItemRequestDto request);
 
     Task<Result<AdminClothingItemResponseDto>> GetById(
         Guid id,

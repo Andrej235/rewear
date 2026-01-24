@@ -1,5 +1,6 @@
 using FluentResults;
 using ReWear.Dtos.Response.ClothingItem;
+using ReWear.Utilities;
 
 namespace ReWear.Services.ModelServices.ClothingItemService;
 
@@ -22,9 +23,9 @@ public partial class ClothingItemService
                 GenderTarget = x.GenderTarget,
 
                 PrimaryStyle = x.PrimaryStyle,
-                SecondaryStyles = x.SecondaryStyles,
+                SecondaryStyles = x.SecondaryStyles.ToFlags(),
 
-                Colors = x.Colors,
+                Colors = x.Colors.ToFlags(),
                 FitType = x.FitType,
                 Season = x.Season,
 
@@ -57,9 +58,9 @@ public partial class ClothingItemService
                 GenderTarget = x.GenderTarget,
 
                 PrimaryStyle = x.PrimaryStyle,
-                SecondaryStyles = x.SecondaryStyles,
+                SecondaryStyles = x.SecondaryStyles.ToFlags(),
 
-                Colors = x.Colors,
+                Colors = x.Colors.ToFlags(),
                 FitType = x.FitType,
                 Season = x.Season,
 

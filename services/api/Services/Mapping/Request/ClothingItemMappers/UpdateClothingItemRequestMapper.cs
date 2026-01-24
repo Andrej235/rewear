@@ -27,6 +27,5 @@ public class UpdateClothingItemRequestMapper
             BrandName = from.BrandName,
 
             IsActive = from.IsActive,
-            CreatedAt = from.CreatedAt,
         };
 }

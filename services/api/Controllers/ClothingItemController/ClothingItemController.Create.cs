@@ -15,11 +15,10 @@ public partial class ClothingItemController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<ActionResult<AdminClothingItemResponseDto>> Create(
-        [FromForm] CreateClothingItemRequestDto request,
-        IFormFile imageStream
+        [FromBody] CreateClothingItemRequestDto request
     )
     {
-        var result = await service.Create(request, imageStream);
+        var result = await service.Create(request);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);

@@ -11,9 +11,9 @@ public class CreateClothingItemRequestDto
     public GenderTarget GenderTarget { get; set; }
 
     public Style PrimaryStyle { get; set; }
-    public Style SecondaryStyles { get; set; }
+    public IEnumerable<Style> SecondaryStyles { get; set; } = [];
 
-    public Color Colors { get; set; }
+    public IEnumerable<Color> Colors { get; set; } = [];
     public Fit FitType { get; set; }
     public Season Season { get; set; }
 
@@ -21,5 +21,4 @@ public class CreateClothingItemRequestDto
     public string BrandName { get; set; } = null!;
 
     public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
 }

@@ -13,9 +13,9 @@ public class AdminClothingItemResponseDto
     public GenderTarget GenderTarget { get; set; }
 
     public Style PrimaryStyle { get; set; }
-    public Style SecondaryStyles { get; set; }
+    public IEnumerable<Style> SecondaryStyles { get; set; } = [];
 
-    public Color Colors { get; set; }
+    public IEnumerable<Color> Colors { get; set; } = [];
     public Fit FitType { get; set; }
     public Season Season { get; set; }
 

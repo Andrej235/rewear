@@ -1,14 +1,14 @@
 using FluentResults;
 using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Response.ClothingItem;
+using ReWear.Utilities;
 
 namespace ReWear.Services.ModelServices.ClothingItemService;
 
 public partial class ClothingItemService
 {
     public async Task<Result<AdminClothingItemResponseDto>> Create(
-        CreateClothingItemRequestDto request,
-        IFormFile imageStream
+        CreateClothingItemRequestDto request
     )
     {
         var mapped = createMapper.Map(request);
@@ -16,19 +16,6 @@ public partial class ClothingItemService
 
         if (createResult.IsFailed)
             return Result.Fail(createResult.Errors);
-
-        try
-        {
-            await storageService.SaveAsync(
-                $"clothing-items/{createResult.Value.Id}",
-                imageStream.OpenReadStream(),
-                imageStream.ContentType
-            );
-        }
-        catch (Exception ex)
-        {
-            return Result.Fail(new Error("Failed to save image").CausedBy(ex));
-        }
 
         var imageUrl = await storageService.GetPublicUrlAsync(
             $"clothing-items/{createResult.Value.Id}"
@@ -52,9 +39,9 @@ public partial class ClothingItemService
             GenderTarget = createResult.Value.GenderTarget,
 
             PrimaryStyle = createResult.Value.PrimaryStyle,
-            SecondaryStyles = createResult.Value.SecondaryStyles,
+            SecondaryStyles = createResult.Value.SecondaryStyles.ToFlags(),
 
-            Colors = createResult.Value.Colors,
+            Colors = createResult.Value.Colors.ToFlags(),
             FitType = createResult.Value.FitType,
             Season = createResult.Value.Season,
 

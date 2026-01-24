@@ -22,5 +22,4 @@ public class UpdateClothingItemRequestDto
     public string BrandName { get; set; } = null!;
 
     public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
 }
