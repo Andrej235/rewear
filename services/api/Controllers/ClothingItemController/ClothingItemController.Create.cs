@@ -18,7 +18,7 @@ public partial class ClothingItemController
         [FromBody] CreateClothingItemRequestDto request
     )
     {
-        var result = await service.Create(request);
+        var result = await itemService.Create(request);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);

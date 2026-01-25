@@ -28,6 +28,8 @@ public partial class ClothingItemService
         if (updateResult.IsFailed)
             return Result.Fail(updateResult.Errors);
 
+        var embeddingResult = await embeddingService.GenerateEmbedding(createResult.Value.Id);
+
         return new AdminClothingItemResponseDto
         {
             Id = createResult.Value.Id,
@@ -52,6 +54,7 @@ public partial class ClothingItemService
             CreatedAt = createResult.Value.CreatedAt,
 
             Stock = 0,
+            LastEmbeddingGeneratedAt = embeddingResult.IsSuccess ? DateTime.UtcNow.AsUTC() : null,
         };
     }
 }

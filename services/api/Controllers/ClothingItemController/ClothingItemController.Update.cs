@@ -15,7 +15,7 @@ public partial class ClothingItemController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Update([FromBody] UpdateClothingItemRequestDto request)
     {
-        var result = await service.Update(request);
+        var result = await itemService.Update(request);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);
@@ -31,7 +31,7 @@ public partial class ClothingItemController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> UpdateImage(Guid id, IFormFile imageStream)
     {
-        var result = await service.UpdateImage(id, imageStream);
+        var result = await itemService.UpdateImage(id, imageStream);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);

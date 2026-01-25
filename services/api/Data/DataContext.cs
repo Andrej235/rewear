@@ -33,11 +33,15 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             embedding.HasKey(x => x.ClothingItemId);
 
             embedding.Property(x => x.Embedding).HasColumnType("vector(1536)").IsRequired();
+            embedding
+                .HasIndex(x => x.Embedding)
+                .HasMethod("hnsw")
+                .HasOperators("vector_cosine_ops");
 
             embedding
                 .HasOne(x => x.ClothingItem)
-                .WithMany()
-                .HasForeignKey(x => x.ClothingItemId)
+                .WithOne(x => x.Embedding)
+                .HasForeignKey<ClothingItemEmbedding>(x => x.ClothingItemId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -119,6 +123,10 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             styleEmbedding.HasKey(x => x.UserId);
 
             styleEmbedding.Property(x => x.Embedding).HasColumnType("vector(1536)").IsRequired();
+            styleEmbedding
+                .HasIndex(x => x.Embedding)
+                .HasMethod("hnsw")
+                .HasOperators("vector_cosine_ops");
 
             styleEmbedding
                 .HasOne(x => x.User)

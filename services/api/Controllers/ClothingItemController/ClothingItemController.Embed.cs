@@ -1,20 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ReWear.Utilities;
 
 namespace ReWear.Controllers.ClothingItemController;
 
 public partial class ClothingItemController
 {
-    [Authorize(Roles = Roles.Admin)]
-    [HttpDelete("{id:guid}")]
+    [HttpPost("{id:guid}/generate-embedding")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult> Delete(Guid id)
+    public async Task<ActionResult> GenerateEmbedding(Guid id)
     {
-        var result = await itemService.Delete(id);
+        var result = await embeddingService.GenerateEmbedding(id);
 
         if (result.IsFailed)
             return BadRequest(new { result.Errors[0].Message });

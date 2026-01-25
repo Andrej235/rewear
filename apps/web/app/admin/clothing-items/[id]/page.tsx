@@ -28,9 +28,11 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { ClothingItemEditor } from "../../../../components/admin/clothing-item-editor";
 import { api } from "../../../../lib/api.client";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ClothingItemPage() {
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const originalItem = useQuery(api, "/clothing-items/{id}", {
     queryKey: ["admin-clothing-item", id],
     parameters: {
@@ -120,6 +122,35 @@ export default function ClothingItemPage() {
     router.push(`/admin/clothing-items/${id}/inventory`);
   }
 
+  async function handleGenerateEmbedding() {
+    const { isOk } = await api.sendRequest(
+      "/clothing-items/{id}/generate-embedding",
+      {
+        method: "post",
+        parameters: {
+          id: originalItem.data!.id,
+        },
+      },
+      {
+        toasts: {
+          success: "Embedding generation started successfully!",
+          loading: "Starting embedding generation...",
+          error: (e) => e.message || "Failed to start embedding generation.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    queryClient.setQueryData(
+      ["admin-clothing-item", id],
+      (oldData: Schema<"AdminClothingItemResponseDto">) => ({
+        ...oldData,
+        lastEmbeddingGeneratedAt: new Date().toISOString(),
+      }),
+    );
+  }
+
   if (originalItem.isLoading) return <LoadingScreen />;
   if (!originalItem.data || originalItem.isError) return notFound();
 
@@ -163,6 +194,9 @@ export default function ClothingItemPage() {
               setImageFile(file);
               changedImage.current = true;
             }}
+            editor
+            lastEmbeddingDate={originalItem.data.lastEmbeddingGeneratedAt}
+            handleGenerateEmbedding={handleGenerateEmbedding}
           />
         </PageContent>
       </PageCard>

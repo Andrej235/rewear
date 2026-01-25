@@ -18,7 +18,7 @@ public partial class ClothingItemController
         CancellationToken cancellationToken
     )
     {
-        var result = await service.GetById(id, cancellationToken);
+        var result = await itemService.GetById(id, cancellationToken);
 
         if (result.IsFailed)
             return NotFound(result.Errors);
@@ -36,7 +36,7 @@ public partial class ClothingItemController
         CancellationToken cancellationToken
     )
     {
-        var result = await service.GetAll(cancellationToken);
+        var result = await itemService.GetAll(cancellationToken);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);

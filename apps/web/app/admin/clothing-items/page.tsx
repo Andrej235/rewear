@@ -212,6 +212,12 @@ export default function ClothingItemsPage() {
 
                   <CardContent className="flex-1 space-y-4 capitalize">
                     <div className="flex max-w-full flex-wrap gap-2">
+                      {!item.lastEmbeddingGeneratedAt && (
+                        <Badge variant="destructive">
+                          Embedding Not Generated
+                        </Badge>
+                      )}
+
                       {item.fitType !== "none" && <Badge>{item.fitType}</Badge>}
 
                       {item.fitType === "none" && (

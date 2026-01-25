@@ -36,6 +36,7 @@ public partial class ClothingItemService
                 CreatedAt = x.CreatedAt,
 
                 Stock = x.InInventory.Count,
+                LastEmbeddingGeneratedAt = x.Embedding != null ? x.Embedding.UpdatedAt : null,
             },
             x => x.Id == id,
             cancellationToken: cancellationToken
@@ -71,6 +72,7 @@ public partial class ClothingItemService
                 CreatedAt = x.CreatedAt,
 
                 Stock = x.InInventory.Count,
+                LastEmbeddingGeneratedAt = x.Embedding != null ? x.Embedding.UpdatedAt : null,
             },
             null,
             cancellationToken: cancellationToken

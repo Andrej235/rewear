@@ -9,7 +9,16 @@ public partial class ClothingItemService
     {
         var mapped = updateMapper.Map(request);
         mapped.ImageUrl = await storageService.GetPublicUrlAsync($"clothing-items/{mapped.Id}");
-        return await updateSingleService.Update(mapped);
+
+        var updateResult = await updateSingleService.Update(mapped);
+        if (updateResult.IsFailed)
+            return Result.Fail(updateResult.Errors);
+
+        var embeddingResult = await embeddingService.GenerateEmbedding(mapped.Id);
+        if (embeddingResult.IsFailed)
+            return Result.Fail(embeddingResult.Errors);
+
+        return Result.Ok();
     }
 
     public async Task<Result> UpdateImage(Guid id, IFormFile imageStream)

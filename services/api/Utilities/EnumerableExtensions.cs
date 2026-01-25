@@ -18,5 +18,20 @@ namespace ReWear.Utilities
 
             return queryable.ToListAsync(cancellationToken: cancellationToken);
         }
+
+        public static string JoinWithCommasAndAnd(this IEnumerable<string> items)
+        {
+            var itemList = items.ToList();
+            if (itemList.Count == 0)
+                return string.Empty;
+            if (itemList.Count == 1)
+                return itemList[0];
+            if (itemList.Count == 2)
+                return $"{itemList[0]} and {itemList[1]}";
+
+            var allButLast = itemList.Take(itemList.Count - 1);
+            var lastItem = itemList.Last();
+            return $"{string.Join(", ", allButLast)}, and {lastItem}";
+        }
     }
 }

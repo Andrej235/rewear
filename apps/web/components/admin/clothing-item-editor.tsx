@@ -1,4 +1,6 @@
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
+import { cn } from "@repo/lib/cn";
+import { Button } from "@repo/ui/common/button";
 import { Checkbox } from "@repo/ui/common/checkbox";
 import {
   Field,
@@ -28,6 +30,10 @@ type Props = {
 
   imageUrl: string | null;
   setImageFile: (file: File | null) => void;
+
+  editor?: boolean;
+  lastEmbeddingDate?: string | null;
+  handleGenerateEmbedding?: () => void;
 };
 
 const categories: Schema<"ClothingCategory">[] = [
@@ -91,6 +97,10 @@ export function ClothingItemEditor({
   setClothingItem: setFormData,
   imageUrl,
   setImageFile,
+
+  editor,
+  lastEmbeddingDate,
+  handleGenerateEmbedding,
 }: Props) {
   return (
     <>
@@ -443,6 +453,36 @@ export function ClothingItemEditor({
                 />
               </Field>
             </FieldLabel>
+
+            {editor && (
+              <div className="flex w-full flex-col gap-2 rounded-md border p-4 leading-snug">
+                <div className="flex flex-col gap-1.5 leading-snug">
+                  <p
+                    className={cn(
+                      "flex w-fit items-center gap-2 text-sm leading-snug font-medium",
+                      !lastEmbeddingDate && "text-destructive",
+                    )}
+                  >
+                    {lastEmbeddingDate
+                      ? `Last embedding generated at: ${new Date(lastEmbeddingDate).toLocaleString()}`
+                      : "No embeddings found"}
+                  </p>
+
+                  <p className="text-sm leading-normal text-muted-foreground">
+                    Embeddings are used to conduct semantic similarity searches
+                    and improve recommendation accuracy. They must be kept
+                    up-to-date with the latest clothing item data. Creating a
+                    new item automatically triggers embedding generation as does
+                    updating an existing item, but in case something goes wrong,
+                    you can manually trigger it here.
+                  </p>
+                </div>
+
+                <Button className="mt-2" onClick={handleGenerateEmbedding}>
+                  Regenerate Embedding Now
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </FieldSet>

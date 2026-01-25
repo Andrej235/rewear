@@ -5,6 +5,7 @@ using ReWear.Models;
 using ReWear.Services.Create;
 using ReWear.Services.Delete;
 using ReWear.Services.Mapping.Request;
+using ReWear.Services.ModelServices.ClothingItemEmbeddingService;
 using ReWear.Services.Read;
 using ReWear.Services.Storage;
 using ReWear.Services.Update;
@@ -12,6 +13,7 @@ using ReWear.Services.Update;
 namespace ReWear.Services.ModelServices.ClothingItemService;
 
 public partial class ClothingItemService(
+    IClothingItemEmbeddingService embeddingService,
     IStorageService storageService,
     ICreateSingleService<ClothingItem> createService,
     IReadSingleSelectedService<ClothingItem> readService,

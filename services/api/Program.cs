@@ -24,12 +24,14 @@ using ReWear.Services.ConnectionMapper;
 using ReWear.Services.Create;
 using ReWear.Services.Delete;
 using ReWear.Services.EmailSender;
+using ReWear.Services.GeminiEmbedding;
 using ReWear.Services.Mapping.Request;
 using ReWear.Services.Mapping.Request.ClothingItemMappers;
 using ReWear.Services.Mapping.Request.InventoryItemMappers;
 using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
 using ReWear.Services.Mapping.Response;
 using ReWear.Services.Mapping.Response.UserMappers;
+using ReWear.Services.ModelServices.ClothingItemEmbeddingService;
 using ReWear.Services.ModelServices.ClothingItemService;
 using ReWear.Services.ModelServices.InventoryItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
@@ -291,6 +293,16 @@ builder.Services.AddCors(options =>
 });
 #endregion
 
+string apiKey =
+    configuration["Gemini:ApiKey"]
+    ?? throw new ArgumentNullException("Gemini API key is not configured.");
+
+builder.Services.AddHttpClient<GeminiEmbeddingService>(options =>
+{
+    options.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    options.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+});
+
 #region Model Services
 
 #region User
@@ -339,6 +351,7 @@ builder.Services.AddScoped<
 #region ClothingItem
 builder.Services.AddScoped<IClothingItemService, ClothingItemService>();
 builder.Services.AddScoped<ICreateSingleService<ClothingItem>, CreateService<ClothingItem>>();
+builder.Services.AddScoped<IReadSingleService<ClothingItem>, ReadService<ClothingItem>>();
 builder.Services.AddScoped<IReadSingleSelectedService<ClothingItem>, ReadService<ClothingItem>>();
 builder.Services.AddScoped<IReadRangeSelectedService<ClothingItem>, ReadService<ClothingItem>>();
 builder.Services.AddScoped<IUpdateSingleService<ClothingItem>, UpdateService<ClothingItem>>();
@@ -351,6 +364,18 @@ builder.Services.AddScoped<
 builder.Services.AddScoped<
     IRequestMapper<UpdateClothingItemRequestDto, ClothingItem>,
     UpdateClothingItemRequestMapper
+>();
+#endregion
+
+#region ClothingItemEmbedding
+builder.Services.AddScoped<IClothingItemEmbeddingService, ClothingItemEmbeddingService>();
+builder.Services.AddScoped<
+    ICreateSingleService<ClothingItemEmbedding>,
+    CreateService<ClothingItemEmbedding>
+>();
+builder.Services.AddScoped<
+    IExecuteUpdateService<ClothingItemEmbedding>,
+    UpdateService<ClothingItemEmbedding>
 >();
 #endregion
 

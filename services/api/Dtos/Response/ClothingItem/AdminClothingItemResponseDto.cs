@@ -26,4 +26,5 @@ public class AdminClothingItemResponseDto
     public DateTime CreatedAt { get; set; }
 
     public int Stock { get; set; }
+    public DateTime? LastEmbeddingGeneratedAt { get; set; }
 }

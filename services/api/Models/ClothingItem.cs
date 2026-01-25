@@ -26,4 +26,5 @@ public class ClothingItem
     public DateTime CreatedAt { get; set; }
 
     public ICollection<InventoryItem> InInventory { get; set; } = [];
+    public ClothingItemEmbedding? Embedding { get; set; }
 }
