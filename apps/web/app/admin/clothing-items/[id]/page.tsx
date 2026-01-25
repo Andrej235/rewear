@@ -1,6 +1,17 @@
 "use client";
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
+import { useLeaveConfirmation } from "@repo/lib/hooks/use-leave-confirmation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/common/alert-dialog";
 import { Button } from "@repo/ui/common/button";
 import {
   PageAction,
@@ -12,21 +23,11 @@ import {
 } from "@repo/ui/common/page-card";
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { Layers, Save } from "lucide-react";
+import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { ClothingItemEditor } from "../../../../components/admin/clothing-item-editor";
 import { api } from "../../../../lib/api.client";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/ui/common/alert-dialog";
-import Link from "next/link";
 
 export default function ClothingItemPage() {
   const { id } = useParams();
@@ -44,6 +45,7 @@ export default function ClothingItemPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const changedData = useRef(false);
   const changedImage = useRef(false);
+  useLeaveConfirmation(() => changedData.current || changedImage.current);
   const [confirmDiscardDialogOpen, setConfirmDiscardDialogOpen] =
     useState(false);
 

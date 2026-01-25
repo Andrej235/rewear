@@ -15,8 +15,10 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { ClothingItemEditor } from "../../../../components/admin/clothing-item-editor";
 import { api } from "../../../../lib/api.client";
+import { useLeaveConfirmation } from "@repo/lib/hooks/use-leave-confirmation";
 
 export default function NewClothingItemPage() {
+  useLeaveConfirmation();
   const [item, setItem] = useState<Schema<"CreateClothingItemRequestDto">>({
     name: "",
     description: "",

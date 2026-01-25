@@ -2,6 +2,7 @@
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
 import { cn } from "@repo/lib/cn";
+import { useLeaveConfirmation } from "@repo/lib/hooks/use-leave-confirmation";
 import { toTitleCase } from "@repo/lib/utils/title-case";
 import {
   AlertDialog,
@@ -115,6 +116,9 @@ export default function ClothingItemInventoryPage() {
   const params = useSearchParams();
   const highlight = params.get("highlight");
   const changedValues = useRef<ChangeTracker[]>([]);
+  useLeaveConfirmation(() =>
+    changedValues.current.some((item) => item.changed),
+  );
 
   const { id } = useParams();
   const stock = useQuery(api, "/inventory-items/{clothingItemId}", {
@@ -190,6 +194,7 @@ export default function ClothingItemInventoryPage() {
 
   async function handleAddStock(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    changedValues.current = []; // reset changed values to avoid issues with re-adding stock after edits
 
     if (addingStock.count < 1) {
       toast.error("Count must be at least 1");
@@ -384,9 +389,6 @@ export default function ClothingItemInventoryPage() {
         <PageDescription>Modify available stock for this item.</PageDescription>
 
         <PageAction className="flex items-center gap-2">
-          {/* TODO: */}
-          {/* turn condition and status cells into selects, detect changes and show a button to save */}
-          {/* add leave confirmation when there are unsaved changes, also do this to edit and new pages */}
           <Button
             variant="secondary"
             className="max-sm:size-9"
