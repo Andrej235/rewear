@@ -8,7 +8,7 @@ public interface IInventoryItemService
 {
     Task<Result> AddStock(AddStockRequestDto dto);
 
-    Task<Result<IEnumerable<AdminInventoryItemResponseDto>>> GetFor(
+    Task<Result<AdminStockResponseDto>> GetFor(
         Guid clothingItemId,
         CancellationToken cancellationToken
     );

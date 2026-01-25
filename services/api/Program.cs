@@ -354,11 +354,9 @@ builder.Services.AddScoped<
 >();
 #endregion
 
-
 #region InventoryItem
 builder.Services.AddScoped<IInventoryItemService, InventoryItemService>();
 builder.Services.AddScoped<ICreateRangeService<InventoryItem>, CreateService<InventoryItem>>();
-builder.Services.AddScoped<IReadRangeSelectedService<InventoryItem>, ReadService<InventoryItem>>();
 builder.Services.AddScoped<
     IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>>,
     AddStockRequestMapper

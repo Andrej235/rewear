@@ -5,30 +5,36 @@ namespace ReWear.Services.ModelServices.InventoryItemService;
 
 public partial class InventoryItemService
 {
-    public Task<Result<IEnumerable<AdminInventoryItemResponseDto>>> GetFor(
+    public Task<Result<AdminStockResponseDto>> GetFor(
         Guid clothingItemId,
         CancellationToken cancellationToken
     )
     {
-        return readService.Get(
-            x => new AdminInventoryItemResponseDto
+        return clothingItemReadService.Get(
+            x => new AdminStockResponseDto
             {
-                Id = x.Id,
-                ClothingItemId = x.ClothingItemId,
-
+                ClothingItemId = x.Id,
+                ClothingItemName = x.Name,
                 Category = x.Category,
-                TopSize = x.TopSize,
-                BottomWaistSize = x.BottomWaistSize,
-                BottomLengthSize = x.BottomLengthSize,
-                ShoeSize = x.ShoeSize,
+                InventoryItems = x.InInventory.Select(x => new AdminInventoryItemResponseDto
+                {
+                    Id = x.Id,
+                    ClothingItemId = x.ClothingItemId,
 
-                Condition = x.Condition,
-                Status = x.Status,
-                TimesRented = x.TimesRented,
-                LastCleanedAt = x.LastCleanedAt,
-                AddedAt = x.AddedAt,
+                    Category = x.Category,
+                    TopSize = x.TopSize,
+                    BottomWaistSize = x.BottomWaistSize,
+                    BottomLengthSize = x.BottomLengthSize,
+                    ShoeSize = x.ShoeSize,
+
+                    Condition = x.Condition,
+                    Status = x.Status,
+                    TimesRented = x.TimesRented,
+                    LastCleanedAt = x.LastCleanedAt,
+                    AddedAt = x.AddedAt,
+                }),
             },
-            x => x.ClothingItemId == clothingItemId,
+            x => x.Id == clothingItemId,
             cancellationToken: cancellationToken
         );
     }

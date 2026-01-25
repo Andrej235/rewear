@@ -13,7 +13,7 @@ public partial class InventoryItemController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<IEnumerable<AdminInventoryItemResponseDto>>> ReadAll(
+    public async Task<ActionResult<AdminStockResponseDto>> ReadAll(
         [FromRoute] Guid clothingItemId,
         CancellationToken cancellationToken
     )

@@ -6,4 +6,4 @@ namespace ReWear.Controllers.InventoryItem;
 [Route("inventory-items")]
 [ApiController]
 [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-public partial class InventoryItemController(InventoryItemService service) : ControllerBase;
+public partial class InventoryItemController(IInventoryItemService service) : ControllerBase;

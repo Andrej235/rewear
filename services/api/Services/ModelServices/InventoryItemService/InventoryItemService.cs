@@ -10,6 +10,6 @@ namespace ReWear.Services.ModelServices.InventoryItemService;
 
 public partial class InventoryItemService(
     ICreateRangeService<InventoryItem> createRangeService,
-    IReadRangeSelectedService<InventoryItem> readService,
+    IReadSingleSelectedService<ClothingItem> clothingItemReadService,
     IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>> addStockRequestMapper
 ) : IInventoryItemService { }

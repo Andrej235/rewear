@@ -1,37 +1,323 @@
 "use client";
+import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
+import { cn } from "@repo/lib/cn";
+import { Button } from "@repo/ui/common/button";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/ui/common/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@repo/ui/common/dropdown-menu";
+import { Field, FieldGroup, FieldLabel } from "@repo/ui/common/field";
+import { Input } from "@repo/ui/common/input";
+import {
+  PageAction,
   PageCard,
   PageContent,
   PageDescription,
   PageHeader,
   PageTitle,
 } from "@repo/ui/common/page-card";
-import { notFound, useParams } from "next/navigation";
-import { api } from "../../../../../lib/api.client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
+import { EllipsisVertical, Plus, QrCode } from "lucide-react";
+import { notFound, useParams } from "next/navigation";
+import { FormEvent, useState } from "react";
+import { api } from "../../../../../lib/api.client";
+import { baseUrl } from "../../../../../lib/base-url";
+import QRCodeDialog from "../../../../../components/qr-code-dialog";
 
 export default function ClothingItemInventoryPage() {
   const { id } = useParams();
-  const originalItem = useQuery(api, "/clothing-items/{id}", {
-    queryKey: ["admin-clothing-item", id],
+  const stock = useQuery(api, "/inventory-items/{clothingItemId}", {
+    queryKey: ["admin-clothing-item-stock", id],
     parameters: {
-      id: id as string,
+      clothingItemId: id as string,
     },
     enabled: !!id && typeof id === "string",
   });
 
-  if (originalItem.isLoading) return <LoadingScreen />;
-  if (!originalItem.data || originalItem.isError) return notFound();
+  const [addingStock, setAddingStock] = useState<{
+    size1: string;
+    size2: string;
+    count: number;
+  }>({
+    size1: "",
+    size2: "",
+    count: 1,
+  });
+
+  function getSizeText(item: Schema<"AdminInventoryItemResponseDto">): string {
+    switch (item.category) {
+      case "top":
+      case "outerwear":
+        return item.topSize || "Size not specified";
+
+      case "bottom":
+        return (
+          [item.bottomWaistSize, item.bottomLengthSize]
+            .filter(Boolean)
+            .join(" x ") || "Size not specified"
+        );
+
+      case "footwear":
+        return item.shoeSize || "Size not specified";
+
+      case "none":
+        return "Category not specified";
+    }
+  }
+
+  async function handleAddStock(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items",
+      {
+        method: "post",
+        payload: {
+          clothingItemId: stock.data!.clothingItemId,
+          quantity: addingStock.count,
+          category: stock.data!.category,
+          topSize:
+            stock.data!.category === "top" ||
+            stock.data!.category === "outerwear"
+              ? addingStock.size1
+              : null,
+          bottomWaistSize:
+            stock.data!.category === "bottom" ? addingStock.size1 : null,
+          bottomLengthSize:
+            stock.data!.category === "bottom" ? addingStock.size2 : null,
+          shoeSize:
+            stock.data!.category === "footwear" ? addingStock.size1 : null,
+        },
+      },
+      {
+        toasts: {
+          success: "Stock added successfully",
+          loading: "Adding stock...",
+          error: (e) => e.message || "Failed to add stock",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    // Reset form
+    setAddingStock({
+      size1: "",
+      size2: "",
+      count: 1,
+    });
+
+    // Refetch stock data
+    stock.refetch();
+  }
+
+  // keep these as separate states to avoid re-rendering the QR code dialog (which causes flickering) when just opening/closing it
+  const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  function handleViewQRCode(inventoryItemId: string) {
+    const url = `${baseUrl}/admin/clothing-items/${stock.data!.clothingItemId}?highlight=${inventoryItemId}`;
+    setQrCodeUrl(url);
+    setQrCodeDialogOpen(true);
+  }
+
+  if (stock.isLoading) return <LoadingScreen />;
+  if (!stock.data || stock.isError) return notFound();
 
   return (
     <PageCard>
       <PageHeader>
-        <PageTitle>Inventory of "{originalItem.data.name}"</PageTitle>
+        <PageTitle>Inventory of "{stock.data.clothingItemName}"</PageTitle>
         <PageDescription>Modify available stock for this item.</PageDescription>
+
+        <PageAction>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>
+                <span>Add Stock</span>
+                <Plus className="ml-2" />
+              </Button>
+            </DialogTrigger>
+
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add Stock</DialogTitle>
+                <DialogDescription>
+                  Enter size and count of the new stock items.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleAddStock} className="space-y-4">
+                <div>
+                  {stock.data.category !== "none" && (
+                    <>
+                      <FieldGroup
+                        className={cn(
+                          stock.data.category === "bottom" &&
+                            "grid grid-cols-2 gap-2",
+                        )}
+                      >
+                        <Field>
+                          <FieldLabel htmlFor="size-1">
+                            {stock.data.category === "bottom"
+                              ? "Waist Size"
+                              : "Size"}
+                          </FieldLabel>
+
+                          <Input
+                            id="size-1"
+                            name="size-1"
+                            required
+                            placeholder="S, M, 32..."
+                            value={addingStock.size1}
+                            onChange={(e) =>
+                              setAddingStock((prev) => ({
+                                ...prev,
+                                size1: e.target.value,
+                              }))
+                            }
+                          />
+                        </Field>
+
+                        {stock.data.category === "bottom" && (
+                          <Field>
+                            <FieldLabel htmlFor="size-2">
+                              Length Size
+                            </FieldLabel>
+
+                            <Input
+                              id="size-2"
+                              name="size-2"
+                              required
+                              placeholder="32"
+                              value={addingStock.size2}
+                              onChange={(e) =>
+                                setAddingStock((prev) => ({
+                                  ...prev,
+                                  size2: e.target.value,
+                                }))
+                              }
+                            />
+                          </Field>
+                        )}
+                      </FieldGroup>
+
+                      <Field className="mt-4" orientation="horizontal">
+                        <FieldLabel htmlFor="count">Count:</FieldLabel>
+
+                        <Input
+                          id="count"
+                          name="count"
+                          type="number"
+                          min={1}
+                          required
+                          placeholder="1"
+                          value={addingStock.count}
+                          onChange={(e) =>
+                            setAddingStock((prev) => ({
+                              ...prev,
+                              count: parseInt(e.target.value, 10),
+                            }))
+                          }
+                        />
+                      </Field>
+                    </>
+                  )}
+
+                  {stock.data.category === "none" && (
+                    <div className="text-sm text-muted-foreground">
+                      Cannot add stock items because clothing item category is
+                      not specified for this clothing item.
+                    </div>
+                  )}
+                </div>
+
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="secondary">Cancel</Button>
+                  </DialogClose>
+
+                  <DialogClose asChild>
+                    <Button
+                      type="submit"
+                      disabled={
+                        stock.data.category === "none" || addingStock.count < 1
+                      }
+                    >
+                      Add Stock
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </PageAction>
       </PageHeader>
 
-      <PageContent></PageContent>
+      <PageContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Id</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>Condition</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {stock.data.inventoryItems.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleViewQRCode(item.id)}
+                  >
+                    <QrCode />
+                  </Button>
+                  <span>{item.id}</span>
+                </TableCell>
+                <TableCell>{getSizeText(item)}</TableCell>
+                <TableCell>{item.condition}</TableCell>
+                <TableCell>{item.status}</TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <EllipsisVertical />
+                    </DropdownMenuTrigger>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </PageContent>
+
+      <QRCodeDialog
+        open={qrCodeDialogOpen}
+        url={qrCodeUrl || ""}
+        setOpen={setQrCodeDialogOpen}
+      />
     </PageCard>
   );
 }
