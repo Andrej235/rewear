@@ -36,12 +36,14 @@ import {
   TableRow,
 } from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
-import { EllipsisVertical, Plus, QrCode } from "lucide-react";
+import { EllipsisVertical, Plus, QrCode, ScanQrCode } from "lucide-react";
 import { notFound, useParams } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { toast } from "sonner";
+import { InvQrCodeScannerDialog } from "../../../../../components/inv-qr-code-scanner-dialog";
+import QRCodeDialog from "../../../../../components/qr-code-dialog";
 import { api } from "../../../../../lib/api.client";
 import { baseUrl } from "../../../../../lib/base-url";
-import QRCodeDialog from "../../../../../components/qr-code-dialog";
 
 export default function ClothingItemInventoryPage() {
   const { id } = useParams();
@@ -139,6 +141,11 @@ export default function ClothingItemInventoryPage() {
     setQrCodeDialogOpen(true);
   }
 
+  const [qrCodeScannerDialogOpen, setQrCodeScannerDialogOpen] = useState(false);
+  function handleScanQRCode(inventoryItemId: string) {
+    toast.info(`Scanned inventory item ID: ${inventoryItemId}`);
+  }
+
   if (stock.isLoading) return <LoadingScreen />;
   if (!stock.data || stock.isError) return notFound();
 
@@ -148,7 +155,21 @@ export default function ClothingItemInventoryPage() {
         <PageTitle>Inventory of "{stock.data.clothingItemName}"</PageTitle>
         <PageDescription>Modify available stock for this item.</PageDescription>
 
-        <PageAction>
+        <PageAction className="flex items-center gap-2">
+          {/* TODO: */}
+          {/* add a scanner for barcodes which scrolls down to (and highlights) the item whose barcode was scanned */}
+          {/* turn condition and status cells into selects, detect changes and show a button to save */}
+          {/* add leave confirmation when there are unsaved changes, also do this to edit and new pages */}
+          {/* implement delete */}
+          <Button
+            variant="secondary"
+            className="max-sm:size-9"
+            onClick={() => setQrCodeScannerDialogOpen(true)}
+          >
+            <span className="sr-only sm:not-sr-only">QR Code</span>
+            <ScanQrCode className="sm:ml-2" />
+          </Button>
+
           <Dialog>
             <DialogTrigger asChild>
               <Button>
@@ -165,7 +186,11 @@ export default function ClothingItemInventoryPage() {
                 </DialogDescription>
               </DialogHeader>
 
-              <form onSubmit={handleAddStock} className="space-y-4">
+              <form
+                onSubmit={handleAddStock}
+                autoFocus={false}
+                className="space-y-4"
+              >
                 <div>
                   {stock.data.category !== "none" && (
                     <>
@@ -317,6 +342,13 @@ export default function ClothingItemInventoryPage() {
         open={qrCodeDialogOpen}
         url={qrCodeUrl || ""}
         setOpen={setQrCodeDialogOpen}
+      />
+
+      <InvQrCodeScannerDialog
+        open={qrCodeScannerDialogOpen}
+        clothingItemId={stock.data.clothingItemId}
+        setOpen={setQrCodeScannerDialogOpen}
+        onScan={handleScanQRCode}
       />
     </PageCard>
   );

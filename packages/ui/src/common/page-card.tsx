@@ -25,7 +25,10 @@ function PageCard({ className, ...props }: React.ComponentProps<"div">) {
 function PageHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <CardHeader
-      className={cn("gap-y-0.5 px-2 md:px-6", className)}
+      className={cn(
+        "gap-y-0.5 px-2 max-lg:has-data-[slot=card-action]:grid-cols-1 md:px-6",
+        className,
+      )}
       {...props}
     />
   );
@@ -39,8 +42,20 @@ function PageContent({ className, ...props }: React.ComponentProps<"div">) {
   return <CardContent className={cn("px-2 md:px-6", className)} {...props} />;
 }
 
+function PageAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <CardAction
+      className={cn(
+        "col-start-auto row-start-auto mt-2 justify-self-start lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:mt-0 lg:justify-self-end",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
 export {
-  CardAction as PageAction,
+  PageAction,
   PageCard,
   PageContent,
   CardDescription as PageDescription,
