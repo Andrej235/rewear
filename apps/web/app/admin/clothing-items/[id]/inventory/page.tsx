@@ -2,7 +2,24 @@
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
 import { cn } from "@repo/lib/cn";
+import { toTitleCase } from "@repo/lib/utils/title-case";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/common/alert-dialog";
 import { Button } from "@repo/ui/common/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@repo/ui/common/context-menu";
 import {
   Dialog,
   DialogClose,
@@ -30,6 +47,13 @@ import {
   PageTitle,
 } from "@repo/ui/common/page-card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/common/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -38,41 +62,59 @@ import {
   TableRow,
 } from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   EllipsisVertical,
   Plus,
   QrCode,
+  SaveAll,
   ScanQrCode,
   Trash2,
 } from "lucide-react";
 import { notFound, useParams, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { InvQrCodeScannerDialog } from "../../../../../components/inv-qr-code-scanner-dialog";
 import QRCodeDialog from "../../../../../components/qr-code-dialog";
 import { api } from "../../../../../lib/api.client";
 import { baseUrl } from "../../../../../lib/base-url";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/ui/common/alert-dialog";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@repo/ui/common/context-menu";
+
+const statuses: Schema<"InventoryItemStatus">[] = [
+  "available",
+  "reserved",
+  "in_cleaning",
+  "retired",
+];
+
+const conditions: Schema<"InventoryItemCondition">[] = [
+  "new",
+  "like_new",
+  "very_good",
+  "good",
+  "acceptable",
+  "poor",
+  "damaged",
+];
+
+type ChangeTracker = {
+  id: string;
+
+  size: string;
+  originalSize: string;
+
+  status: Schema<"InventoryItemStatus">;
+  originalStatus: Schema<"InventoryItemStatus">;
+
+  condition: Schema<"InventoryItemCondition">;
+  originalCondition: Schema<"InventoryItemCondition">;
+
+  changed: boolean;
+};
 
 export default function ClothingItemInventoryPage() {
   const params = useSearchParams();
   const highlight = params.get("highlight");
+  const changedValues = useRef<ChangeTracker[]>([]);
 
   const { id } = useParams();
   const stock = useQuery(api, "/inventory-items/{clothingItemId}", {
@@ -92,8 +134,26 @@ export default function ClothingItemInventoryPage() {
       behavior: "smooth",
       block: "center",
     });
-    console.log(element);
   }, [highlight, stock.data]);
+
+  useEffect(() => {
+    if (!stock.data) return;
+
+    changedValues.current = stock.data.inventoryItems.map((item) => ({
+      id: item.id,
+
+      size: getSizeText(item),
+      originalSize: getSizeText(item),
+
+      condition: item.condition,
+      originalCondition: item.condition,
+
+      status: item.status,
+      originalStatus: item.status,
+
+      changed: false,
+    }));
+  }, [stock.data]);
 
   const [deletingItem, setDeletingItem] =
     useState<Schema<"AdminInventoryItemResponseDto"> | null>(null);
@@ -219,6 +279,85 @@ export default function ClothingItemInventoryPage() {
         };
       },
     );
+  }
+
+  async function handleSaveChanges() {
+    const itemsToUpdate = changedValues.current.filter((item) => item.changed);
+    if (itemsToUpdate.length === 0) {
+      toast.info("No changes to save");
+      return;
+    }
+
+    const promise = (async () => {
+      let successCount = 0;
+
+      for (const item of itemsToUpdate) {
+        if (item.condition !== item.originalCondition) {
+          const { isOk } = await api.sendRequest(
+            "/inventory-items/change-condition",
+            {
+              method: "patch",
+              payload: {
+                inventoryItemId: item.id,
+                newCondition: item.condition,
+              },
+            },
+          );
+          if (isOk) successCount++;
+        }
+
+        if (item.status !== item.originalStatus) {
+          const { isOk } = await api.sendRequest(
+            "/inventory-items/change-status",
+            {
+              method: "patch",
+              payload: {
+                inventoryItemId: item.id,
+                newStatus: item.status,
+              },
+            },
+          );
+          if (isOk) successCount++;
+        }
+
+        if (item.size !== item.originalSize) {
+          const { isOk } = await api.sendRequest(
+            "/inventory-items/change-size",
+            {
+              method: "patch",
+              payload: {
+                inventoryItemId: item.id,
+                topSize:
+                  stock.data!.category === "top" ||
+                  stock.data!.category === "outerwear"
+                    ? item.size
+                    : null,
+                bottomWaistSize:
+                  stock.data!.category === "bottom"
+                    ? item.size.split(" x ")[0] || null
+                    : null,
+                bottomLengthSize:
+                  stock.data!.category === "bottom"
+                    ? item.size.split(" x ")[1] || null
+                    : null,
+                shoeSize:
+                  stock.data!.category === "footwear" ? item.size : null,
+              },
+            },
+          );
+          if (isOk) successCount++;
+        }
+      }
+
+      return successCount;
+    })();
+
+    toast.promise(promise, {
+      loading: `Saving ${itemsToUpdate.length} changes...`,
+      success: (successCount) =>
+        `Successfully saved ${successCount} out of ${itemsToUpdate.length} changes`,
+      error: (e) => e.message || `Failed to save changes`,
+    });
   }
 
   // keep these as separate states to avoid re-rendering the QR code dialog (which causes flickering) when just opening/closing it
@@ -389,16 +528,16 @@ export default function ClothingItemInventoryPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Id</TableHead>
-              <TableHead>Size</TableHead>
-              <TableHead>Condition</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead className="w-1/3">Id</TableHead>
+              <TableHead className="w-1/6">Size</TableHead>
+              <TableHead className="w-1/6">Condition</TableHead>
+              <TableHead className="w-1/6">Status</TableHead>
+              <TableHead className="w-1/6 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {stock.data.inventoryItems.map((item) => (
+            {stock.data.inventoryItems.map((item, i) => (
               <ContextMenu key={item.id}>
                 <ContextMenuTrigger asChild>
                   <TableRow
@@ -415,10 +554,70 @@ export default function ClothingItemInventoryPage() {
                       </Button>
                       <span>{item.id}</span>
                     </TableCell>
-                    <TableCell>{getSizeText(item)}</TableCell>
-                    <TableCell>{item.condition}</TableCell>
-                    <TableCell>{item.status}</TableCell>
+
                     <TableCell>
+                      <Input
+                        defaultValue={getSizeText(item)}
+                        onChange={(e) => {
+                          const newValue = e.target.value.trim();
+                          const prev = changedValues.current[i]!;
+                          prev.size = newValue;
+                          prev.changed = prev.originalSize !== newValue;
+                        }}
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <Select
+                        defaultValue={item.condition}
+                        onValueChange={(
+                          newValue: Schema<"InventoryItemCondition">,
+                        ) => {
+                          const prev = changedValues.current[i]!;
+                          prev.condition = newValue;
+                          prev.changed = prev.originalCondition !== newValue;
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {conditions.map((condition) => (
+                            <SelectItem key={condition} value={condition}>
+                              {toTitleCase(condition.replace(/_/g, " "))}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+
+                    <TableCell>
+                      <Select
+                        defaultValue={item.status}
+                        onValueChange={(
+                          newValue: Schema<"InventoryItemStatus">,
+                        ) => {
+                          const prev = changedValues.current[i]!;
+                          prev.status = newValue;
+                          prev.changed = prev.originalStatus !== newValue;
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {statuses.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {toTitleCase(status.replace(/_/g, " "))}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+
+                    <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
@@ -472,6 +671,16 @@ export default function ClothingItemInventoryPage() {
           </TableBody>
         </Table>
       </PageContent>
+
+      <div className="fixed right-8 bottom-8 size-max rounded-full">
+        <Button
+          size="icon-lg"
+          className="size-16 rounded-full"
+          onClick={handleSaveChanges}
+        >
+          <SaveAll className="size-6" />
+        </Button>
+      </div>
 
       <QRCodeDialog
         open={qrCodeDialogOpen}
