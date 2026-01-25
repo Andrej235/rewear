@@ -1,6 +1,6 @@
 {
-  "appId": "com.mobile.app",
-  "appName": "mobile",
+  "appId": "com.rewear.app",
+  "appName": "ReWear",
   "webDir": "dist",
   "plugins": {}
 }

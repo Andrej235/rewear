@@ -11,6 +11,7 @@ type Config = {
   login: (api: Api, username: string, password: string) => Promise<boolean>;
   logOut: (api: Api) => Promise<boolean>;
   isLoggedIn: (api: Api) => Promise<boolean>;
+  isAdmin: (api: Api) => Promise<boolean>;
 };
 
 export type Api = {
@@ -29,6 +30,7 @@ export type Api = {
   login: (username: string, password: string) => Promise<boolean>;
   logOut: () => Promise<boolean>;
   isLoggedIn: () => Promise<boolean>;
+  isAdmin: () => Promise<boolean>;
   addAuthHeaders: (request: RequestInit) => Promise<RequestInit>;
 };
 
@@ -47,6 +49,7 @@ export function createApi(config: Config): Api {
     login: (username, password) => config.login(api, username, password),
     logOut: () => config.logOut(api),
     isLoggedIn: () => config.isLoggedIn(api),
+    isAdmin: () => config.isAdmin(api),
     addAuthHeaders: config.addAuthHeaders,
   };
 

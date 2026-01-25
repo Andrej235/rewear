@@ -147,6 +147,30 @@ export const api = createApi({
     return !!jwt;
   },
 
+  isAdmin: async () => {
+    const jwt = await getJwt(); // returns null if jwt is invalid or expired and cannot be refreshed
+    if (!jwt) return false;
+
+    const [, payloadBase64] = jwt.split(".");
+
+    const payload =
+      payloadBase64 &&
+      (JSON.parse(
+        atob(payloadBase64.replace(/-/g, "+").replace(/_/g, "/")),
+      ) as unknown);
+
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      !("role" in payload) ||
+      typeof payload.role !== "string"
+    ) {
+      return false;
+    }
+
+    return payload.role === "Admin";
+  },
+
   login: async (api, username, password) => {
     const { isOk, data } = await api.sendRequest(
       "/users/login",
@@ -188,7 +212,7 @@ export const api = createApi({
         {
           method: "post",
           payload: {
-            refreshToken: refreshToken as never, // todo: fix type issue
+            refreshToken,
           },
         },
         {

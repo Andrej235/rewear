@@ -1,6 +1,6 @@
 using System.Security.Claims;
 
-namespace Template.Services.ConnectionMapper;
+namespace ReWear.Services.ConnectionMapper;
 
 public class ConnectionMapper
 {

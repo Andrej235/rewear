@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace Template.Services.Create
+namespace ReWear.Services.Create
 {
     /// <summary>
     /// Represents a generic interface for adding multiple entities to the database at once

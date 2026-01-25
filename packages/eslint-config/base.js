@@ -15,6 +15,7 @@ const baseConfig = {
       sourceType: "module",
     },
     globals: {
+      ...globals.browser,
       ...globals.es2021,
       ...globals.node,
     },
@@ -49,8 +50,6 @@ const baseConfig = {
 
     // Disallow empty object types like '{}', use 'Record<string, unknown>' or 'object' instead
     "@typescript-eslint/no-empty-object-type": "error",
-
-    
 
     "@typescript-eslint/no-misused-promises": "off",
 

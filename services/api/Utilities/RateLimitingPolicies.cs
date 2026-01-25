@@ -1,4 +1,4 @@
-namespace Template.Utilities;
+namespace ReWear.Utilities;
 
 public static class RateLimitingPolicies
 {

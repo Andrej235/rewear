@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Resend;
-using Template.Models;
+using ReWear.Models;
 using Task = System.Threading.Tasks.Task;
 
-namespace Template.Services.EmailSender;
+namespace ReWear.Services.EmailSender;
 
 public class EmailSender(IResend resend) : IEmailSender<User>
 {
@@ -57,7 +57,7 @@ public class EmailSender(IResend resend) : IEmailSender<User>
     {
         var message = new EmailMessage
         {
-            From = "Template <email@quarkapi.dev>",
+            From = "ReWear <email@quarkapi.dev>",
             Subject = subject,
             HtmlBody = htmlContent,
             To = [toEmail],

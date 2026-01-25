@@ -18,6 +18,14 @@ export const api = createApi({
     return isOk;
   },
 
+  isAdmin: async (api: Api) => {
+    const { isOk } = await api.sendRequest("/users/check-auth-admin", {
+      method: "get",
+    });
+
+    return isOk;
+  },
+
   login: async (api, username, password) => {
     const { isOk } = await api.sendRequest(
       "/users/login",

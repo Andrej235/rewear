@@ -2,7 +2,7 @@
 using FluentResults;
 using Microsoft.EntityFrameworkCore.Query;
 
-namespace Template.Services.Update
+namespace ReWear.Services.Update
 {
     /// <summary>
     /// Represents a generic interface for updating entities in the database without loading them into memory

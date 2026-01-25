@@ -1,4 +1,4 @@
-﻿namespace Template.Services.Mapping.Response
+﻿namespace ReWear.Services.Mapping.Response
 {
     /// <summary>
     /// Represents a generic interface for mapping from a domain model to a DTO

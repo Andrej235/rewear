@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics;
 
-namespace Template.Exceptions
+namespace ReWear.Exceptions
 {
     public class ExceptionHandler(ILogger<ExceptionHandler> logger) : IExceptionHandler
     {

@@ -1,7 +1,7 @@
-using Template.Dtos.Response.User;
-using Template.Models;
+using ReWear.Dtos.Response.User;
+using ReWear.Models;
 
-namespace Template.Services.Mapping.Response.UserMappers;
+namespace ReWear.Services.Mapping.Response.UserMappers;
 
 public class UserResponseMapper : IResponseMapper<User, UserResponseDto>
 {

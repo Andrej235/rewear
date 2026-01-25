@@ -1,12 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Web;
 using FluentResults;
-using Template.Dtos.Request.User;
-using Template.Dtos.Response.User;
-using Template.Errors;
-using Template.Models;
+using ReWear.Dtos.Request.User;
+using ReWear.Dtos.Response.User;
+using ReWear.Errors;
+using ReWear.Models;
+using ReWear.Utilities;
 
-namespace Template.Services.ModelServices.UserService;
+namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {
@@ -17,6 +18,10 @@ public partial class UserService
 
         if (!userResult.Succeeded)
             return Result.Fail(userResult.Errors.Select(x => new BadRequest(x.Description)));
+
+        var roleResult = await userManager.AddToRoleAsync(user, Roles.User);
+        if (!roleResult.Succeeded)
+            return Result.Fail(roleResult.Errors.Select(x => new BadRequest(x.Description)));
 
         var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
         await emailSender.SendConfirmationLinkAsync(

@@ -1,8 +1,8 @@
 using FluentResults;
-using Template.Dtos.Request.User;
-using Template.Errors;
+using ReWear.Dtos.Request.User;
+using ReWear.Errors;
 
-namespace Template.Services.ModelServices.UserService;
+namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {

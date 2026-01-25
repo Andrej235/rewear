@@ -2,27 +2,45 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
+using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql;
 using Resend;
-using Template.Data;
-using Template.Dtos.Response.User;
-using Template.Exceptions;
-using Template.Models;
-using Template.Services.ConnectionMapper;
-using Template.Services.Create;
-using Template.Services.Delete;
-using Template.Services.EmailSender;
-using Template.Services.Mapping.Response;
-using Template.Services.Mapping.Response.UserMappers;
-using Template.Services.ModelServices.TokenService;
-using Template.Services.ModelServices.UserService;
-using Template.Services.Read;
-using Template.Utilities;
+using ReWear.Data;
+using ReWear.Dtos.Request.ClothingItem;
+using ReWear.Dtos.Request.InventoryItem;
+using ReWear.Dtos.Request.SubscriptionPlan;
+using ReWear.Dtos.Response.User;
+using ReWear.Exceptions;
+using ReWear.Models;
+using ReWear.Services.ConnectionMapper;
+using ReWear.Services.Create;
+using ReWear.Services.Delete;
+using ReWear.Services.EmailSender;
+using ReWear.Services.GeminiEmbedding;
+using ReWear.Services.Mapping.Request;
+using ReWear.Services.Mapping.Request.ClothingItemMappers;
+using ReWear.Services.Mapping.Request.InventoryItemMappers;
+using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
+using ReWear.Services.Mapping.Response;
+using ReWear.Services.Mapping.Response.UserMappers;
+using ReWear.Services.ModelServices.ClothingItemEmbeddingService;
+using ReWear.Services.ModelServices.ClothingItemService;
+using ReWear.Services.ModelServices.InventoryItemService;
+using ReWear.Services.ModelServices.SubscriptionPlanService;
+using ReWear.Services.ModelServices.TokenService;
+using ReWear.Services.ModelServices.UserService;
+using ReWear.Services.Read;
+using ReWear.Services.Storage;
+using ReWear.Services.Update;
+using ReWear.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 var isDevelopment = builder.Environment.IsDevelopment();
@@ -37,7 +55,7 @@ Directory.CreateDirectory(keysPath);
 builder
     .Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keysPath))
-    .SetApplicationName("Template");
+    .SetApplicationName("ReWear");
 
 var configuration = builder.Configuration;
 builder.Services.AddSingleton(configuration);
@@ -55,14 +73,13 @@ builder.Services.Configure<ResendClientOptions>(options =>
 builder.Services.AddTransient<IResend, ResendClient>();
 
 builder.Services.AddOpenApi();
-if (isDevelopment)
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
 {
-    builder.Services.AddSwaggerGen(options =>
-    {
-        options.SupportNonNullableReferenceTypes();
-        options.SwaggerDoc("v1", new() { Title = "API", Version = "v1" });
-    });
-}
+    options.SupportNonNullableReferenceTypes();
+    options.SwaggerDoc("v1", new() { Title = "API", Version = "v1" });
+});
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -81,11 +98,23 @@ if (string.IsNullOrWhiteSpace(connectionString))
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
-    options.UseNpgsql(connectionString);
+    options.UseNpgsql(connectionString, o => o.UseVector());
 
     if (isDevelopment)
         options.EnableSensitiveDataLogging();
 });
+
+var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
+dataSourceBuilder.UseVector();
+await using var dataSource = dataSourceBuilder.Build();
+
+var connection = dataSource.OpenConnection();
+await using (var cmd = new NpgsqlCommand("CREATE EXTENSION IF NOT EXISTS vector", connection))
+{
+    await cmd.ExecuteNonQueryAsync();
+}
+
+connection.ReloadTypes();
 
 #region Identity / Auth
 builder.Services.AddAuthorization(options =>
@@ -264,11 +293,22 @@ builder.Services.AddCors(options =>
 });
 #endregion
 
+string apiKey =
+    configuration["Gemini:ApiKey"]
+    ?? throw new ArgumentNullException("Gemini API key is not configured.");
+
+builder.Services.AddHttpClient<GeminiEmbeddingService>(options =>
+{
+    options.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    options.DefaultRequestHeaders.Add("x-goog-api-key", apiKey);
+});
+
 #region Model Services
 
 #region User
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReadSingleService<User>, ReadService<User>>();
+builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
 builder.Services.AddScoped<IResponseMapper<User, UserResponseDto>, UserResponseMapper>();
 #endregion
 
@@ -277,6 +317,77 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICreateSingleService<RefreshToken>, CreateService<RefreshToken>>();
 builder.Services.AddScoped<IReadSingleService<RefreshToken>, ReadService<RefreshToken>>();
 builder.Services.AddScoped<IDeleteService<RefreshToken>, DeleteService<RefreshToken>>();
+#endregion
+
+#region SubscriptionPlan
+builder.Services.AddScoped<ISubscriptionPlanService, SubscriptionPlanService>();
+builder.Services.AddScoped<
+    ICreateSingleService<SubscriptionPlan>,
+    CreateService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<
+    IReadSingleSelectedService<SubscriptionPlan>,
+    ReadService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<
+    IReadRangeSelectedService<SubscriptionPlan>,
+    ReadService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<
+    IUpdateSingleService<SubscriptionPlan>,
+    UpdateService<SubscriptionPlan>
+>();
+builder.Services.AddScoped<IDeleteService<SubscriptionPlan>, DeleteService<SubscriptionPlan>>();
+builder.Services.AddScoped<
+    IRequestMapper<CreateSubscriptionPlanRequestDto, SubscriptionPlan>,
+    CreateSubscriptionPlanRequestMapper
+>();
+builder.Services.AddScoped<
+    IRequestMapper<UpdateSubscriptionPlanRequestDto, SubscriptionPlan>,
+    UpdateSubscriptionPlanRequestMapper
+>();
+#endregion
+
+#region ClothingItem
+builder.Services.AddScoped<IClothingItemService, ClothingItemService>();
+builder.Services.AddScoped<ICreateSingleService<ClothingItem>, CreateService<ClothingItem>>();
+builder.Services.AddScoped<IReadSingleService<ClothingItem>, ReadService<ClothingItem>>();
+builder.Services.AddScoped<IReadSingleSelectedService<ClothingItem>, ReadService<ClothingItem>>();
+builder.Services.AddScoped<IReadRangeSelectedService<ClothingItem>, ReadService<ClothingItem>>();
+builder.Services.AddScoped<IUpdateSingleService<ClothingItem>, UpdateService<ClothingItem>>();
+builder.Services.AddScoped<IExecuteUpdateService<ClothingItem>, UpdateService<ClothingItem>>();
+builder.Services.AddScoped<IDeleteService<ClothingItem>, DeleteService<ClothingItem>>();
+builder.Services.AddScoped<
+    IRequestMapper<CreateClothingItemRequestDto, ClothingItem>,
+    CreateClothingItemRequestMapper
+>();
+builder.Services.AddScoped<
+    IRequestMapper<UpdateClothingItemRequestDto, ClothingItem>,
+    UpdateClothingItemRequestMapper
+>();
+#endregion
+
+#region ClothingItemEmbedding
+builder.Services.AddScoped<IClothingItemEmbeddingService, ClothingItemEmbeddingService>();
+builder.Services.AddScoped<
+    ICreateSingleService<ClothingItemEmbedding>,
+    CreateService<ClothingItemEmbedding>
+>();
+builder.Services.AddScoped<
+    IExecuteUpdateService<ClothingItemEmbedding>,
+    UpdateService<ClothingItemEmbedding>
+>();
+#endregion
+
+#region InventoryItem
+builder.Services.AddScoped<IInventoryItemService, InventoryItemService>();
+builder.Services.AddScoped<ICreateRangeService<InventoryItem>, CreateService<InventoryItem>>();
+builder.Services.AddScoped<IExecuteUpdateService<InventoryItem>, UpdateService<InventoryItem>>();
+builder.Services.AddScoped<IDeleteService<InventoryItem>, DeleteService<InventoryItem>>();
+builder.Services.AddScoped<
+    IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>>,
+    AddStockRequestMapper
+>();
 #endregion
 
 #endregion
@@ -297,7 +408,36 @@ builder.Services.AddSignalR();
 builder.Services.AddSingleton<ConnectionMapper>();
 #endregion
 
+#region AWS S3
+AWSOptions awsOptions = new()
+{
+    Credentials = new BasicAWSCredentials(
+        builder.Configuration["AWS:AccessKey"],
+        builder.Configuration["AWS:SecretKey"]
+    ),
+    Region = Amazon.RegionEndpoint.GetBySystemName(builder.Configuration["AWS:Region"]),
+};
+
+builder.Services.AddDefaultAWSOptions(awsOptions);
+builder.Services.AddAWSService<IAmazonS3>();
+builder.Services.AddScoped<IStorageService, S3StorageService>();
+#endregion
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+
+    var roles = new[] { Roles.Admin, Roles.User };
+
+    foreach (var role in roles)
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+}
 
 if (isDevelopment)
 {

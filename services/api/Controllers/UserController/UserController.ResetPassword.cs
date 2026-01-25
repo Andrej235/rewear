@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using Template.Dtos.Request.User;
-using Template.Errors;
-using Template.Utilities;
+using ReWear.Dtos.Request.User;
+using ReWear.Errors;
+using ReWear.Utilities;
 
-namespace Template.Controllers.UserController;
+namespace ReWear.Controllers.UserController;
 
 public partial class UserController
 {

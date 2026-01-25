@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Template.Data;
+using ReWear.Data;
 
 #nullable disable
 
-namespace Template.Migrations
+namespace ReWear.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20260122152239_InitialMigration")]
@@ -157,7 +157,7 @@ namespace Template.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Template.Models.RefreshToken", b =>
+            modelBuilder.Entity("ReWear.Models.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -187,7 +187,7 @@ namespace Template.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("Template.Models.User", b =>
+            modelBuilder.Entity("ReWear.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -262,7 +262,7 @@ namespace Template.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -271,7 +271,7 @@ namespace Template.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -286,7 +286,7 @@ namespace Template.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -295,16 +295,16 @@ namespace Template.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Template.Models.RefreshToken", b =>
+            modelBuilder.Entity("ReWear.Models.RefreshToken", b =>
                 {
-                    b.HasOne("Template.Models.User", "User")
+                    b.HasOne("ReWear.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

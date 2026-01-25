@@ -1,4 +1,4 @@
-namespace Template.Exceptions;
+namespace ReWear.Exceptions;
 
 [Serializable]
 public class MissingConfigException : Exception

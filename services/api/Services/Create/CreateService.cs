@@ -1,8 +1,8 @@
 ﻿using FluentResults;
-using Template.Data;
-using Template.Errors;
+using ReWear.Data;
+using ReWear.Errors;
 
-namespace Template.Services.Create
+namespace ReWear.Services.Create
 {
     public class CreateService<T>(DataContext context, ILogger<CreateService<T>> logger)
         : ICreateSingleService<T>,

@@ -1,6 +1,5 @@
-import * as React from "react";
-
 import { cn } from "@repo/lib/cn";
+import * as React from "react";
 
 function Input({
   className,

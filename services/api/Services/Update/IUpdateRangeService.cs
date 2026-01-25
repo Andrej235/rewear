@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace Template.Services.Update
+namespace ReWear.Services.Update
 {
     /// <summary>
     /// Represents a generic interface for updating multiple entities to which you have a reference to in the database

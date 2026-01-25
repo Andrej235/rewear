@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Template.Dtos.Request.User;
-using Template.Dtos.Response.User;
-using Template.Utilities;
+using ReWear.Dtos.Request.User;
+using ReWear.Dtos.Response.User;
+using ReWear.Utilities;
 
-namespace Template.Controllers.UserController;
+namespace ReWear.Controllers.UserController;
 
 public partial class UserController
 {
@@ -13,6 +13,12 @@ public partial class UserController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public Task<OkResult> CheckAuth() => Task.FromResult(Ok());
+
+    [Authorize(Roles = Roles.Admin)]
+    [HttpGet("check-auth-admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public Task<OkResult> CheckAuthAdmin() => Task.FromResult(Ok());
 
     [HttpPost("register")]
     [ProducesResponseType(StatusCodes.Status201Created)]

@@ -1,4 +1,4 @@
-namespace Template.Services.EmailTokenProvider;
+namespace ReWear.Services.EmailTokenProvider;
 
 using System;
 using System.Linq;

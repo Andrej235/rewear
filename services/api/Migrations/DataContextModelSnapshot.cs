@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using Template.Data;
+using Pgvector;
+using ReWear.Data;
 
 #nullable disable
 
-namespace Template.Migrations
+namespace ReWear.Migrations
 {
     [DbContext(typeof(DataContext))]
     partial class DataContextModelSnapshot : ModelSnapshot
@@ -20,6 +21,7 @@ namespace Template.Migrations
                 .HasAnnotation("ProductVersion", "10.0.1")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -154,7 +156,192 @@ namespace Template.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Template.Models.RefreshToken", b =>
+            modelBuilder.Entity("ReWear.Models.ClothingItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BrandName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Colors")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FitType")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GenderTarget")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Material")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PrimaryStyle")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Season")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecondaryStyles")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("ClothingItems");
+                });
+
+            modelBuilder.Entity("ReWear.Models.ClothingItemEmbedding", b =>
+                {
+                    b.Property<Guid>("ClothingItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Vector>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("vector(1536)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ClothingItemId");
+
+                    b.HasIndex("Embedding");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
+
+                    b.ToTable("ClothingItemEmbeddings");
+                });
+
+            modelBuilder.Entity("ReWear.Models.DeliveryBox", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Month")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("ReturnedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("DeliveryBoxes");
+                });
+
+            modelBuilder.Entity("ReWear.Models.DeliveryBoxItem", b =>
+                {
+                    b.Property<Guid>("DeliveryBoxId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("InventoryItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("ChosenByAi")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("ConditionOnReturn")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ConditionOnSend")
+                        .HasColumnType("integer");
+
+                    b.HasKey("DeliveryBoxId", "InventoryItemId");
+
+                    b.HasIndex("InventoryItemId");
+
+                    b.HasIndex("DeliveryBoxId", "InventoryItemId");
+
+                    b.ToTable("DeliveryBoxItems");
+                });
+
+            modelBuilder.Entity("ReWear.Models.InventoryItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("BottomLengthSize")
+                        .HasColumnType("text");
+
+                    b.Property<string>("BottomWaistSize")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ClothingItemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Condition")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("LastCleanedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ShoeSize")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TimesRented")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TopSize")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClothingItemId");
+
+                    b.ToTable("InventoryItems");
+                });
+
+            modelBuilder.Entity("ReWear.Models.RefreshToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -184,7 +371,39 @@ namespace Template.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
-            modelBuilder.Entity("Template.Models.User", b =>
+            modelBuilder.Entity("ReWear.Models.SubscriptionPlan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowsOuterwear")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("AllowsShoes")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxItemsPerMonth")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("MonthlyPrice")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("SubscriptionPlans");
+                });
+
+            modelBuilder.Entity("ReWear.Models.User", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("text");
@@ -192,9 +411,18 @@ namespace Template.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
+                    b.Property<int>("AvoidedColors")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("AvoidedMaterials")
+                        .HasColumnType("integer");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -202,6 +430,12 @@ namespace Template.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("FitPreference")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -226,6 +460,18 @@ namespace Template.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("PreferredColors")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PrimaryStyle")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SeasonPreference")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecondaryStyles")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
@@ -248,6 +494,83 @@ namespace Template.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("ReWear.Models.UserSize", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SizeType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserSizes");
+                });
+
+            modelBuilder.Entity("ReWear.Models.UserStyleEmbedding", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<Vector>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("vector(1536)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("Embedding");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Embedding"), "hnsw");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Embedding"), new[] { "vector_cosine_ops" });
+
+                    b.ToTable("UserStyleEmbeddings");
+                });
+
+            modelBuilder.Entity("ReWear.Models.UserSubscription", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("SubscriptionPlanId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("NextRenewalDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("UserId", "SubscriptionPlanId");
+
+                    b.HasIndex("SubscriptionPlanId");
+
+                    b.HasIndex("UserId", "SubscriptionPlanId");
+
+                    b.ToTable("UserSubscriptions");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -259,7 +582,7 @@ namespace Template.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -268,7 +591,7 @@ namespace Template.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -283,7 +606,7 @@ namespace Template.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -292,22 +615,133 @@ namespace Template.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("Template.Models.User", null)
+                    b.HasOne("ReWear.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Template.Models.RefreshToken", b =>
+            modelBuilder.Entity("ReWear.Models.ClothingItemEmbedding", b =>
                 {
-                    b.HasOne("Template.Models.User", "User")
+                    b.HasOne("ReWear.Models.ClothingItem", "ClothingItem")
+                        .WithOne("Embedding")
+                        .HasForeignKey("ReWear.Models.ClothingItemEmbedding", "ClothingItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClothingItem");
+                });
+
+            modelBuilder.Entity("ReWear.Models.DeliveryBox", b =>
+                {
+                    b.HasOne("ReWear.Models.User", "User")
+                        .WithMany("DeliveryBoxes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ReWear.Models.DeliveryBoxItem", b =>
+                {
+                    b.HasOne("ReWear.Models.DeliveryBox", "DeliveryBox")
+                        .WithMany("Items")
+                        .HasForeignKey("DeliveryBoxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ReWear.Models.InventoryItem", "InventoryItem")
+                        .WithMany()
+                        .HasForeignKey("InventoryItemId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
+
+                    b.Navigation("DeliveryBox");
+
+                    b.Navigation("InventoryItem");
+                });
+
+            modelBuilder.Entity("ReWear.Models.InventoryItem", b =>
+                {
+                    b.HasOne("ReWear.Models.ClothingItem", "ClothingItem")
+                        .WithMany("InInventory")
+                        .HasForeignKey("ClothingItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClothingItem");
+                });
+
+            modelBuilder.Entity("ReWear.Models.RefreshToken", b =>
+                {
+                    b.HasOne("ReWear.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ReWear.Models.UserSize", b =>
+                {
+                    b.HasOne("ReWear.Models.User", null)
+                        .WithMany("Sizes")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ReWear.Models.UserStyleEmbedding", b =>
+                {
+                    b.HasOne("ReWear.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ReWear.Models.UserSubscription", b =>
+                {
+                    b.HasOne("ReWear.Models.SubscriptionPlan", null)
+                        .WithMany("Subscriptions")
+                        .HasForeignKey("SubscriptionPlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ReWear.Models.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("ReWear.Models.ClothingItem", b =>
+                {
+                    b.Navigation("Embedding");
+
+                    b.Navigation("InInventory");
+                });
+
+            modelBuilder.Entity("ReWear.Models.DeliveryBox", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("ReWear.Models.SubscriptionPlan", b =>
+                {
+                    b.Navigation("Subscriptions");
+                });
+
+            modelBuilder.Entity("ReWear.Models.User", b =>
+                {
+                    b.Navigation("DeliveryBoxes");
+
+                    b.Navigation("Sizes");
                 });
 #pragma warning restore 612, 618
         }
