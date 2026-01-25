@@ -357,6 +357,8 @@ builder.Services.AddScoped<
 #region InventoryItem
 builder.Services.AddScoped<IInventoryItemService, InventoryItemService>();
 builder.Services.AddScoped<ICreateRangeService<InventoryItem>, CreateService<InventoryItem>>();
+builder.Services.AddScoped<IExecuteUpdateService<InventoryItem>, UpdateService<InventoryItem>>();
+builder.Services.AddScoped<IDeleteService<InventoryItem>, DeleteService<InventoryItem>>();
 builder.Services.AddScoped<
     IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>>,
     AddStockRequestMapper

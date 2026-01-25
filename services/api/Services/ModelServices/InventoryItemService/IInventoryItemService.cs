@@ -12,4 +12,10 @@ public interface IInventoryItemService
         Guid clothingItemId,
         CancellationToken cancellationToken
     );
+
+    Task<Result> ChangeSize(ChangeSizeRequestDto dto);
+    Task<Result> ChangeCondition(ChangeConditionRequestDto dto);
+    Task<Result> ChangeStatus(ChangeStatusRequestDto dto);
+
+    Task<Result> Delete(Guid inventoryItemId);
 }

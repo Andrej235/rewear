@@ -15,6 +15,8 @@ import {
 } from "@repo/ui/common/dialog";
 import {
   DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/ui/common/dropdown-menu";
 import { Field, FieldGroup, FieldLabel } from "@repo/ui/common/field";
@@ -36,16 +38,42 @@ import {
   TableRow,
 } from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
-import { EllipsisVertical, Plus, QrCode, ScanQrCode } from "lucide-react";
-import { notFound, useParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import {
+  EllipsisVertical,
+  Plus,
+  QrCode,
+  ScanQrCode,
+  Trash2,
+} from "lucide-react";
+import { notFound, useParams, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InvQrCodeScannerDialog } from "../../../../../components/inv-qr-code-scanner-dialog";
 import QRCodeDialog from "../../../../../components/qr-code-dialog";
 import { api } from "../../../../../lib/api.client";
 import { baseUrl } from "../../../../../lib/base-url";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/common/alert-dialog";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@repo/ui/common/context-menu";
 
 export default function ClothingItemInventoryPage() {
+  const params = useSearchParams();
+  const highlight = params.get("highlight");
+
   const { id } = useParams();
   const stock = useQuery(api, "/inventory-items/{clothingItemId}", {
     queryKey: ["admin-clothing-item-stock", id],
@@ -54,7 +82,21 @@ export default function ClothingItemInventoryPage() {
     },
     enabled: !!id && typeof id === "string",
   });
+  const queryClient = useQueryClient();
 
+  useEffect(() => {
+    if (!highlight) return;
+
+    const element = document.getElementById(highlight);
+    element?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+    console.log(element);
+  }, [highlight, stock.data]);
+
+  const [deletingItem, setDeletingItem] =
+    useState<Schema<"AdminInventoryItemResponseDto"> | null>(null);
   const [addingStock, setAddingStock] = useState<{
     size1: string;
     size2: string;
@@ -88,6 +130,16 @@ export default function ClothingItemInventoryPage() {
 
   async function handleAddStock(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (addingStock.count < 1) {
+      toast.error("Count must be at least 1");
+      return;
+    }
+
+    if (addingStock.count >= 50) {
+      toast.error("Count must be less than 50");
+      return;
+    }
 
     const { isOk } = await api.sendRequest(
       "/inventory-items",
@@ -132,11 +184,48 @@ export default function ClothingItemInventoryPage() {
     stock.refetch();
   }
 
+  async function handleDelete() {
+    if (!deletingItem) return;
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items/{id}",
+      {
+        method: "delete",
+        parameters: {
+          id: deletingItem.id,
+        },
+      },
+      {
+        toasts: {
+          success: "Inventory item deleted successfully",
+          loading: "Deleting inventory item...",
+          error: (e) => e.message || "Failed to delete inventory item",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    setDeletingItem(null);
+    queryClient.setQueryData(
+      ["admin-clothing-item-stock", stock.data!.clothingItemId],
+      (oldData: Schema<"AdminStockResponseDto">) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          inventoryItems: oldData.inventoryItems.filter(
+            (item) => item.id !== deletingItem.id,
+          ),
+        };
+      },
+    );
+  }
+
   // keep these as separate states to avoid re-rendering the QR code dialog (which causes flickering) when just opening/closing it
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   function handleViewQRCode(inventoryItemId: string) {
-    const url = `${baseUrl}/admin/clothing-items/${stock.data!.clothingItemId}?highlight=${inventoryItemId}`;
+    const url = `${baseUrl}/admin/clothing-items/${stock.data!.clothingItemId}/inventory?highlight=${inventoryItemId}`;
     setQrCodeUrl(url);
     setQrCodeDialogOpen(true);
   }
@@ -157,10 +246,8 @@ export default function ClothingItemInventoryPage() {
 
         <PageAction className="flex items-center gap-2">
           {/* TODO: */}
-          {/* add a scanner for barcodes which scrolls down to (and highlights) the item whose barcode was scanned */}
           {/* turn condition and status cells into selects, detect changes and show a button to save */}
           {/* add leave confirmation when there are unsaved changes, also do this to edit and new pages */}
-          {/* implement delete */}
           <Button
             variant="secondary"
             className="max-sm:size-9"
@@ -253,6 +340,7 @@ export default function ClothingItemInventoryPage() {
                           name="count"
                           type="number"
                           min={1}
+                          max={50}
                           required
                           placeholder="1"
                           value={addingStock.count}
@@ -311,28 +399,75 @@ export default function ClothingItemInventoryPage() {
 
           <TableBody>
             {stock.data.inventoryItems.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
+              <ContextMenu key={item.id}>
+                <ContextMenuTrigger asChild>
+                  <TableRow
+                    className={cn(highlight === item.id && "bg-primary/50")}
+                    id={item.id}
+                  >
+                    <TableCell className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleViewQRCode(item.id)}
+                      >
+                        <QrCode />
+                      </Button>
+                      <span>{item.id}</span>
+                    </TableCell>
+                    <TableCell>{getSizeText(item)}</TableCell>
+                    <TableCell>{item.condition}</TableCell>
+                    <TableCell>{item.status}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <EllipsisVertical />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            className="flex items-center gap-2"
+                            onClick={() => handleViewQRCode(item.id)}
+                          >
+                            <QrCode />
+                            <span>View QR Code</span>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            variant="destructive"
+                            className="flex items-center gap-2"
+                            onClick={() => setDeletingItem(item)}
+                          >
+                            <Trash2 />
+                            <span>Delete Item</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                </ContextMenuTrigger>
+
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    className="flex items-center gap-2"
                     onClick={() => handleViewQRCode(item.id)}
                   >
                     <QrCode />
-                  </Button>
-                  <span>{item.id}</span>
-                </TableCell>
-                <TableCell>{getSizeText(item)}</TableCell>
-                <TableCell>{item.condition}</TableCell>
-                <TableCell>{item.status}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger>
-                      <EllipsisVertical />
-                    </DropdownMenuTrigger>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
+                    <span>View QR Code</span>
+                  </ContextMenuItem>
+
+                  <ContextMenuItem
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                    onClick={() => setDeletingItem(item)}
+                  >
+                    <Trash2 />
+                    <span>Delete Item</span>
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             ))}
           </TableBody>
         </Table>
@@ -350,6 +485,31 @@ export default function ClothingItemInventoryPage() {
         setOpen={setQrCodeScannerDialogOpen}
         onScan={handleScanQRCode}
       />
+
+      <AlertDialog
+        open={!!deletingItem}
+        onOpenChange={() => setDeletingItem(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this inventory item?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone.
+            </AlertDialogDescription>
+
+            <div className="mt-4 flex items-center gap-2">
+              <strong>Item ID:</strong> {deletingItem?.id}
+            </div>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PageCard>
   );
 }
