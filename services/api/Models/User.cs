@@ -24,4 +24,6 @@ public class User : IdentityUser
     public DateTime CreatedAt { get; set; }
 
     public ICollection<DeliveryBox> DeliveryBoxes { get; set; } = [];
+    public ICollection<UserSubscription> Subscriptions { get; set; } = [];
+    public UserStyleEmbedding? StyleEmbedding { get; set; }
 }

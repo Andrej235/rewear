@@ -130,8 +130,8 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
 
             styleEmbedding
                 .HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
+                .WithOne(x => x.StyleEmbedding)
+                .HasForeignKey<UserStyleEmbedding>(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -141,13 +141,13 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             subscription.HasIndex(x => new { x.UserId, x.SubscriptionPlanId });
 
             subscription
-                .HasOne<User>()
-                .WithMany()
+                .HasOne(x => x.User)
+                .WithMany(x => x.Subscriptions)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             subscription
-                .HasOne<SubscriptionPlan>()
+                .HasOne(x => x.SubscriptionPlan)
                 .WithMany(x => x.Subscriptions)
                 .HasForeignKey(x => x.SubscriptionPlanId)
                 .OnDelete(DeleteBehavior.Restrict);

@@ -17,7 +17,6 @@ using ReWear.Data;
 using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Request.InventoryItem;
 using ReWear.Dtos.Request.SubscriptionPlan;
-using ReWear.Dtos.Response.User;
 using ReWear.Exceptions;
 using ReWear.Models;
 using ReWear.Services.ConnectionMapper;
@@ -29,14 +28,13 @@ using ReWear.Services.Mapping.Request;
 using ReWear.Services.Mapping.Request.ClothingItemMappers;
 using ReWear.Services.Mapping.Request.InventoryItemMappers;
 using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
-using ReWear.Services.Mapping.Response;
-using ReWear.Services.Mapping.Response.UserMappers;
 using ReWear.Services.ModelServices.ClothingItemEmbeddingService;
 using ReWear.Services.ModelServices.ClothingItemService;
 using ReWear.Services.ModelServices.InventoryItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
 using ReWear.Services.ModelServices.UserService;
+using ReWear.Services.ModelServices.UserStyleEmbeddingService;
 using ReWear.Services.Read;
 using ReWear.Services.Storage;
 using ReWear.Services.Update;
@@ -308,8 +306,27 @@ builder.Services.AddHttpClient<GeminiEmbeddingService>(options =>
 #region User
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReadSingleService<User>, ReadService<User>>();
+builder.Services.AddScoped<IReadSingleSelectedService<User>, ReadService<User>>();
+builder.Services.AddScoped<IExecuteUpdateService<User>, UpdateService<User>>();
 builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
-builder.Services.AddScoped<IResponseMapper<User, UserResponseDto>, UserResponseMapper>();
+
+builder.Services.AddScoped<ICreateRangeService<UserSize>, CreateService<UserSize>>();
+builder.Services.AddScoped<
+    ICreateSingleService<UserSubscription>,
+    CreateService<UserSubscription>
+>();
+#endregion
+
+#region UserStyleEmbedding
+builder.Services.AddScoped<IUserStyleEmbeddingService, UserStyleEmbeddingService>();
+builder.Services.AddScoped<
+    ICreateSingleService<UserStyleEmbedding>,
+    CreateService<UserStyleEmbedding>
+>();
+builder.Services.AddScoped<
+    IExecuteUpdateService<UserStyleEmbedding>,
+    UpdateService<UserStyleEmbedding>
+>();
 #endregion
 
 #region Tokens

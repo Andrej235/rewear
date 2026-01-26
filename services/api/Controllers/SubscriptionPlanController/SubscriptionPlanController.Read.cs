@@ -27,12 +27,29 @@ public partial class SubscriptionPlanController
     }
 
     [Authorize(Roles = Roles.Admin)]
+    [HttpGet("all/admin")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<List<AdminSubscriptionPlanResponseDto>>> AdminReadAll(
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await service.AdminGetAll(cancellationToken);
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+
+        return Ok(result.Value);
+    }
+
     [HttpGet("all")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<AdminSubscriptionPlanResponseDto>>> ReadAll(
+    public async Task<ActionResult<List<SubscriptionPlanResponseDto>>> ReadAll(
         CancellationToken cancellationToken
     )
     {

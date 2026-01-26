@@ -12,7 +12,7 @@ public static class EnumExtensions
         }
     }
 
-    public static TEnum ParseFlags<TEnum>(this IEnumerable<TEnum> flags)
+    public static TEnum FromFlags<TEnum>(this IEnumerable<TEnum> flags)
         where TEnum : struct, Enum
     {
         TEnum result = default!;

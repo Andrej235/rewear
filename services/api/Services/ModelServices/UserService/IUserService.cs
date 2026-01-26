@@ -8,6 +8,8 @@ namespace ReWear.Services.ModelServices.UserService;
 public interface IUserService
 {
     Task<Result> Register(RegisterRequestDto request);
+    Task<Result> SetupAccount(ClaimsPrincipal claim, SetupAccountRequestDto request);
+
     Task<Result<TokensResponseDto>> Login(LoginRequestDto request);
     Task<Result<TokensResponseDto>> Refresh(RefreshTokensRequestDto request);
     Task<Result> Logout(LogoutRequestDto request);
@@ -24,6 +26,10 @@ public interface IUserService
         CancellationToken cancellationToken
     );
     Task<Result<UserResponseDto>> Get(ClaimsPrincipal claim, CancellationToken cancellationToken);
+    Task<Result<FullUserResponseDto>> GetFull(
+        ClaimsPrincipal claim,
+        CancellationToken cancellationToken
+    );
 
     Task<Result> Delete(string id);
 

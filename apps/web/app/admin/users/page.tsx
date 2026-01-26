@@ -43,7 +43,7 @@ import {
 } from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
-import { EllipsisVertical, Shield, Trash2, User2 } from "lucide-react";
+import { EllipsisVertical, Flame, Shield, Trash2, User2 } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../../lib/api.client";
 
@@ -160,6 +160,44 @@ export default function AdminUsersPage() {
     setDeletingUser(null);
   }
 
+  async function handleGenerateEmbedding(id: string) {
+    const { isOk } = await api.sendRequest(
+      "/users/{id}/generate-embedding",
+      {
+        method: "post",
+        parameters: {
+          id: id,
+        },
+      },
+      {
+        toasts: {
+          success: "Embedding generation started successfully",
+          loading: "Starting embedding generation...",
+          error: (e: Error) =>
+            e.message || "Failed to start embedding generation",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    queryClient.setQueryData(
+      ["admin-users"],
+      (oldData: Schema<"AdminUserResponseDto">[]) => {
+        if (!oldData) return oldData;
+
+        return oldData.map((u: Schema<"AdminUserResponseDto">) =>
+          u.id === id
+            ? {
+                ...u,
+                lastEmbeddingGeneratedAt: new Date().toISOString(),
+              }
+            : u,
+        );
+      },
+    );
+  }
+
   if (users.isLoading) return <LoadingScreen />;
 
   return (
@@ -177,6 +215,7 @@ export default function AdminUsersPage() {
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Subscription Plan</TableHead>
+              <TableHead>Last Embedding Generation</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -196,8 +235,16 @@ export default function AdminUsersPage() {
                       )}
                     </TableCell>
                     <TableCell>{user.role}</TableCell>
-                    {/* TODO: Implement */}
-                    <TableCell>{"Premium"}</TableCell>
+                    <TableCell>{user.subscriptionPlanName}</TableCell>
+                    <TableCell>
+                      {user.lastEmbeddingGeneratedAt && (
+                        <span>{user.lastEmbeddingGeneratedAt}</span>
+                      )}
+
+                      {!user.lastEmbeddingGeneratedAt && (
+                        <Badge variant="destructive">Never</Badge>
+                      )}
+                    </TableCell>
 
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -221,6 +268,13 @@ export default function AdminUsersPage() {
                                 ? "Revoke Admin"
                                 : "Make Admin"}
                             </span>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => handleGenerateEmbedding(user.id)}
+                          >
+                            <Flame />
+                            <span>Generate Embedding</span>
                           </DropdownMenuItem>
 
                           <DropdownMenuSeparator />
@@ -253,6 +307,13 @@ export default function AdminUsersPage() {
                     <span>
                       {user.role === "Admin" ? "Revoke Admin" : "Make Admin"}
                     </span>
+                  </ContextMenuItem>
+
+                  <ContextMenuItem
+                    onClick={() => handleGenerateEmbedding(user.id)}
+                  >
+                    <Flame />
+                    <span>Generate Embedding</span>
                   </ContextMenuItem>
 
                   <ContextMenuSeparator />

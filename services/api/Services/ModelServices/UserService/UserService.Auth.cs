@@ -1,38 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
-using System.Web;
 using FluentResults;
 using ReWear.Dtos.Request.User;
 using ReWear.Dtos.Response.User;
 using ReWear.Errors;
-using ReWear.Models;
-using ReWear.Utilities;
 
 namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {
-    public async Task<Result> Register(RegisterRequestDto request)
-    {
-        var user = new User { Email = request.Email, UserName = request.Username };
-        var userResult = await userManager.CreateAsync(user, request.Password);
-
-        if (!userResult.Succeeded)
-            return Result.Fail(userResult.Errors.Select(x => new BadRequest(x.Description)));
-
-        var roleResult = await userManager.AddToRoleAsync(user, Roles.User);
-        if (!roleResult.Succeeded)
-            return Result.Fail(roleResult.Errors.Select(x => new BadRequest(x.Description)));
-
-        var emailToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
-        await emailSender.SendConfirmationLinkAsync(
-            user,
-            request.Email,
-            $"{configuration["FrontendUrl"]}/confirm-email?token={HttpUtility.UrlEncode(emailToken)}&email={HttpUtility.UrlEncode(request.Email)}"
-        );
-
-        return Result.Ok();
-    }
-
     public async Task<Result<TokensResponseDto>> Login(LoginRequestDto request)
     {
         var user = request.Username.Contains('@')

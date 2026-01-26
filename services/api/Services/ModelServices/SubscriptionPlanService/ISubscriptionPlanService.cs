@@ -12,7 +12,10 @@ public interface ISubscriptionPlanService
         int id,
         CancellationToken cancellationToken
     );
-    Task<Result<IEnumerable<AdminSubscriptionPlanResponseDto>>> GetAll(
+    Task<Result<IEnumerable<AdminSubscriptionPlanResponseDto>>> AdminGetAll(
+        CancellationToken cancellationToken
+    );
+    Task<Result<IEnumerable<SubscriptionPlanResponseDto>>> GetAll(
         CancellationToken cancellationToken
     );
 

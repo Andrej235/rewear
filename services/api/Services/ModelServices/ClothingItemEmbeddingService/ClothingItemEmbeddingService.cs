@@ -70,8 +70,8 @@ public class ClothingItemEmbeddingService(
         var text = $"""
             Clothing item:
             A {category} designed for {genderTarget}.
-            Style: primarily {primaryStyle}{(
-                secondaryStyles != "" ? $", with elements of {secondaryStyles}" : ""
+            Style: primarily {primaryStyle} with elements of {(
+                secondaryStyles != "" ? secondaryStyles : "no secondary style elements"
             )}.
             Fit: {fitType}.
             Colors: {colors}.

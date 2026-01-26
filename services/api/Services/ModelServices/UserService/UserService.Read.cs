@@ -9,26 +9,70 @@ namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {
-    public async Task<Result<UserResponseDto>> Get(
+    public Task<Result<UserResponseDto>> Get(
         ClaimsPrincipal claim,
         CancellationToken cancellationToken
     )
     {
         var userId = userManager.GetUserId(claim);
         if (userId is null)
-            return Result.Fail(new NotFound("User not found"));
+            return Task.FromResult(Result.Fail<UserResponseDto>(new NotFound("User not found")));
 
-        var userResult = await userReadService.Get(x => x.Id == userId);
+        return userReadService.Get(
+            x => new UserResponseDto
+            {
+                Username = x.UserName!,
+                Email = x.Email!,
+                IsEmailVerified = x.EmailConfirmed,
+                HasSubscription = x.Subscriptions.Any(),
+            },
+            x => x.Id == userId
+        );
+    }
 
-        if (userResult.IsFailed)
-        {
-            if (userResult.HasError<NotFound>())
-                await signInManager.SignOutAsync();
+    public Task<Result<FullUserResponseDto>> GetFull(
+        ClaimsPrincipal claim,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = userManager.GetUserId(claim);
+        if (userId is null)
+            return Task.FromResult(
+                Result.Fail<FullUserResponseDto>(new NotFound("User not found"))
+            );
 
-            return Result.Fail(userResult.Errors);
-        }
+        return userReadService.Get(
+            x => new FullUserResponseDto
+            {
+                Username = x.UserName!,
+                Email = x.Email!,
+                IsEmailVerified = x.EmailConfirmed,
+                HasSubscription = x.Subscriptions.Any(),
 
-        return responseMapper.Map(userResult.Value);
+                Gender = x.Gender,
+
+                PrimaryStyle = x.PrimaryStyle,
+                SecondaryStyles = x.SecondaryStyles,
+
+                SeasonPreference = x.SeasonPreference,
+
+                PreferredColors = x.PreferredColors,
+                AvoidedColors = x.AvoidedColors,
+
+                FitPreference = x.FitPreference,
+
+                Sizes = x.Sizes.Select(x => new UserSizeResponseDto()
+                {
+                    Id = x.Id,
+                    Label = x.Label,
+                    SizeType = x.SizeType,
+                }),
+
+                AvoidedMaterials = x.AvoidedMaterials,
+            },
+            x => x.Id == userId,
+            cancellationToken: cancellationToken
+        );
     }
 
     public async Task<Result<IEnumerable<AdminUserResponseDto>>> GetAll(
@@ -51,6 +95,12 @@ public partial class UserService
                         .Join(context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
                         .FirstOrDefault() ?? "No Role",
                 JoinedAt = u.CreatedAt,
+                SubscriptionPlanName =
+                    u.Subscriptions.OrderByDescending(s => s.StartDate)
+                        .Select(s => s.SubscriptionPlan.Name)
+                        .FirstOrDefault() ?? "No Subscription",
+                LastEmbeddingGeneratedAt =
+                    u.StyleEmbedding != null ? u.StyleEmbedding.UpdatedAt : null,
             });
 
             result = result.OrderBy(u => u.Username);

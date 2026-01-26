@@ -10,12 +10,7 @@ export default function RegisterPage(): JSX.Element {
 
   return (
     <div className="grid h-screen w-screen place-items-center">
-      <SignupForm
-        className="w-lg"
-        api={api}
-        navigate={router.push}
-        LinkComp={Link}
-      />
+      <SignupForm api={api} navigate={router.push} LinkComp={Link} />
     </div>
   );
 }

@@ -1,17 +1,5 @@
 "use client";
-import { Api } from "@repo/lib/api/api";
-import { LinkComp } from "@repo/lib/types/link-comp";
-import { Navigate } from "@repo/lib/types/navigate";
-import { EMAIL_REGEX } from "@repo/lib/utils/regex";
-import { FormEvent, JSX, useState } from "react";
 import { Button } from "./common/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./common/card";
 import {
   Field,
   FieldDescription,
@@ -20,18 +8,31 @@ import {
   FieldLabel,
 } from "./common/field";
 import { Input } from "./common/input";
+import { Api } from "@repo/lib/api/api";
+import { cn } from "@repo/lib/cn";
+import { LinkComp } from "@repo/lib/types/link-comp";
+import { Navigate } from "@repo/lib/types/navigate";
+import { EMAIL_REGEX } from "@repo/lib/utils/regex";
+import { FormEvent, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./common/card";
 
 export function SignupForm({
   className,
   api,
-  navigate,
   LinkComp: Link,
+  navigate,
 }: {
   className?: string;
   api: Api;
   navigate: Navigate;
   LinkComp: LinkComp;
-}): JSX.Element {
+}) {
   type SignupFields = "name" | "email" | "password" | "confirmPassword";
 
   const [touched, setTouched] = useState<
@@ -142,7 +143,7 @@ export function SignupForm({
       },
       {
         toasts: {
-          success: "Account created successfully! You can now log in.",
+          success: "Account created successfully!",
           loading: "Creating your account...",
           error: (e) =>
             e.message || "An error occurred while creating your account.",
@@ -155,14 +156,20 @@ export function SignupForm({
   };
 
   return (
-    <Card className={className}>
+    <Card
+      className={cn(
+        "max-h-[70vh] w-full max-w-[90vw] sm:w-auto sm:min-w-lg",
+        className,
+      )}
+    >
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>
           Enter your information below to create your account
         </CardDescription>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="overflow-auto">
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <Field data-invalid={touched.name && errors.name.length !== 0}>
