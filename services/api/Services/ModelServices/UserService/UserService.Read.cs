@@ -9,26 +9,25 @@ namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService
 {
-    public async Task<Result<UserResponseDto>> Get(
+    public Task<Result<UserResponseDto>> Get(
         ClaimsPrincipal claim,
         CancellationToken cancellationToken
     )
     {
         var userId = userManager.GetUserId(claim);
         if (userId is null)
-            return Result.Fail(new NotFound("User not found"));
+            return Task.FromResult(Result.Fail<UserResponseDto>(new NotFound("User not found")));
 
-        var userResult = await userReadService.Get(x => x.Id == userId);
-
-        if (userResult.IsFailed)
-        {
-            if (userResult.HasError<NotFound>())
-                await signInManager.SignOutAsync();
-
-            return Result.Fail(userResult.Errors);
-        }
-
-        return responseMapper.Map(userResult.Value);
+        return userReadService.Get(
+            x => new UserResponseDto
+            {
+                Username = x.UserName!,
+                Email = x.Email!,
+                IsEmailVerified = x.EmailConfirmed,
+                HasSubscription = x.Subscriptions.Any(),
+            },
+            x => x.Id == userId
+        );
     }
 
     public Task<Result<FullUserResponseDto>> GetFull(
@@ -42,12 +41,13 @@ public partial class UserService
                 Result.Fail<FullUserResponseDto>(new NotFound("User not found"))
             );
 
-        return userReadSelectedService.Get(
+        return userReadService.Get(
             x => new FullUserResponseDto
             {
                 Username = x.UserName!,
                 Email = x.Email!,
                 IsEmailVerified = x.EmailConfirmed,
+                HasSubscription = x.Subscriptions.Any(),
 
                 Gender = x.Gender,
 

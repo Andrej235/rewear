@@ -9,7 +9,7 @@ import { Button } from "../common/button";
 import { Field, FieldGroup } from "../common/field";
 import { LoadingScreen } from "../loading-screen";
 
-export function RegistrationStep5({
+export function SetupFormStep4({
   api,
   advance,
   back,

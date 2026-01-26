@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Web;
 using FluentResults;
 using ReWear.Dtos.Request.User;
@@ -31,15 +32,11 @@ public partial class UserService
         return Result.Ok();
     }
 
-    public async Task<Result> CompleteRegistrationProcess(
-        CompleteRegistrationProcessRequestDto request
-    )
+    public async Task<Result> SetupAccount(ClaimsPrincipal claim, SetupAccountRequestDto request)
     {
-        var user = await userManager.FindByEmailAsync(request.Email);
-        if (user is null)
+        var userId = userManager.GetUserId(claim);
+        if (userId is null)
             return Result.Fail(new NotFound("User not found"));
-
-        var userId = await userManager.GetUserIdAsync(user)!;
 
         var updateResult = await updateService.Update(
             x => x.Id == userId,

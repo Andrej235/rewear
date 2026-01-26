@@ -29,13 +29,13 @@ const materials: Schema<"Material">[] = [
   "rayon",
 ];
 
-export type RegistrationStep3Data = {
+export type SetupFormStep2Data = {
   preferredColors: Schema<"Color">[];
   avoidedColors: Schema<"Color">[];
   avoidedMaterials: Schema<"Material">[];
 };
 
-export function RegistrationStep3({
+export function SetupFormStep2({
   advance,
   back,
   data: formData,
@@ -43,11 +43,11 @@ export function RegistrationStep3({
 }: {
   advance: () => void;
   back: () => void;
-  data: RegistrationStep3Data;
+  data: SetupFormStep2Data;
   setData: (
     setter:
-      | RegistrationStep3Data
-      | ((prev: RegistrationStep3Data) => RegistrationStep3Data),
+      | SetupFormStep2Data
+      | ((prev: SetupFormStep2Data) => SetupFormStep2Data),
   ) => void;
 }) {
   function handleSubmit(e: FormEvent<HTMLFormElement>) {

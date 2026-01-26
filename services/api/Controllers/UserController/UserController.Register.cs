@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReWear.Dtos.Request.User;
 
@@ -18,14 +19,13 @@ public partial class UserController
         return Ok();
     }
 
-    [HttpPut("complete-registration")]
+    [Authorize]
+    [HttpPut("setup-account")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> CompleteRegistrationProcess(
-        [FromBody] CompleteRegistrationProcessRequestDto request
-    )
+    public async Task<ActionResult> SetupAccount([FromBody] SetupAccountRequestDto request)
     {
-        var result = await userService.CompleteRegistrationProcess(request);
+        var result = await userService.SetupAccount(User, request);
 
         if (result.IsFailed)
             return BadRequest(new { result.Errors[0].Message });

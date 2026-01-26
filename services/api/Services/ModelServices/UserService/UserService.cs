@@ -19,12 +19,10 @@ public partial class UserService(
     ICreateRangeService<UserSize> userSizeCreateRangeService,
     ICreateSingleService<UserSubscription> userSubscriptionCreateService,
     IReadSingleService<RefreshToken> tokenReadService,
-    IReadSingleService<User> userReadService,
-    IReadSingleSelectedService<User> userReadSelectedService,
+    IReadSingleSelectedService<User> userReadService,
     IExecuteUpdateService<User> updateService,
     IDeleteService<User> deleteService,
     IDeleteService<RefreshToken> tokenDeleteService,
-    IResponseMapper<User, UserResponseDto> responseMapper,
     IConfiguration configuration,
     DataContext context,
     ILogger<UserService> logger

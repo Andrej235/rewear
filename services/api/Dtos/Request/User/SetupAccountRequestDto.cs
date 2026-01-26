@@ -2,10 +2,8 @@ using ReWear.Models.Enums;
 
 namespace ReWear.Dtos.Request.User;
 
-public class CompleteRegistrationProcessRequestDto
+public class SetupAccountRequestDto
 {
-    public string Email { get; set; } = null!;
-
     public Gender Gender { get; set; }
 
     public Style PrimaryStyle { get; set; }

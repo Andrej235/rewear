@@ -1,5 +1,5 @@
 "use client";
-import { SignupForm } from "@repo/ui/register/signup-form";
+import { SignupForm } from "@repo/ui/signup-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JSX } from "react";

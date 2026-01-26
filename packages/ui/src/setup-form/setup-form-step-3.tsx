@@ -20,14 +20,14 @@ import {
 } from "../common/dropdown-menu";
 import { Field, FieldGroup, FieldLabel } from "../common/field";
 
-export type RegistrationStep4Data = {
+export type SetupFormStep3Data = {
   topSizes: string[];
   bottomWaistSizes: string[];
   bottomLengthSizes: string[];
   shoeSize: string[];
 };
 
-export function RegistrationStep4({
+export function SetupFormStep3({
   advance,
   back,
   data: formData,
@@ -35,11 +35,11 @@ export function RegistrationStep4({
 }: {
   advance: () => void;
   back: () => void;
-  data: RegistrationStep4Data;
+  data: SetupFormStep3Data;
   setData: (
     setter:
-      | RegistrationStep4Data
-      | ((prev: RegistrationStep4Data) => RegistrationStep4Data),
+      | SetupFormStep3Data
+      | ((prev: SetupFormStep3Data) => SetupFormStep3Data),
   ) => void;
 }) {
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);

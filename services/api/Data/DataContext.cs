@@ -142,7 +142,7 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
 
             subscription
                 .HasOne<User>()
-                .WithMany()
+                .WithMany(x => x.Subscriptions)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 

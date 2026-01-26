@@ -19,7 +19,7 @@ const styles: Schema<"Style">[] = [
 const fits: Schema<"Fit">[] = ["slim", "regular", "loose"];
 const seasons: Schema<"Season">[] = ["all", "summer", "winter"];
 
-export type RegistrationStep2Data = {
+export type SetupFormStep1Data = {
   gender: Schema<"Gender">;
   primaryStyle: Schema<"Style">;
   secondaryStyles: Schema<"Style">[];
@@ -27,17 +27,17 @@ export type RegistrationStep2Data = {
   season: Schema<"Season">;
 };
 
-export function RegistrationStep2({
+export function SetupFormStep1({
   advance,
   data: formData,
   setData: setFormData,
 }: {
   advance: () => void;
-  data: RegistrationStep2Data;
+  data: SetupFormStep1Data;
   setData: (
     setter:
-      | RegistrationStep2Data
-      | ((prev: RegistrationStep2Data) => RegistrationStep2Data),
+      | SetupFormStep1Data
+      | ((prev: SetupFormStep1Data) => SetupFormStep1Data),
   ) => void;
 }) {
   function handleSubmit(e: FormEvent<HTMLFormElement>) {

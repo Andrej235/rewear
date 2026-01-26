@@ -8,7 +8,7 @@ namespace ReWear.Services.ModelServices.UserService;
 public interface IUserService
 {
     Task<Result> Register(RegisterRequestDto request);
-    Task<Result> CompleteRegistrationProcess(CompleteRegistrationProcessRequestDto request);
+    Task<Result> SetupAccount(ClaimsPrincipal claim, SetupAccountRequestDto request);
 
     Task<Result<TokensResponseDto>> Login(LoginRequestDto request);
     Task<Result<TokensResponseDto>> Refresh(RefreshTokensRequestDto request);
