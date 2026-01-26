@@ -31,6 +31,50 @@ public partial class UserService
         return responseMapper.Map(userResult.Value);
     }
 
+    public Task<Result<FullUserResponseDto>> GetFull(
+        ClaimsPrincipal claim,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = userManager.GetUserId(claim);
+        if (userId is null)
+            return Task.FromResult(
+                Result.Fail<FullUserResponseDto>(new NotFound("User not found"))
+            );
+
+        return userReadSelectedService.Get(
+            x => new FullUserResponseDto
+            {
+                Username = x.UserName!,
+                Email = x.Email!,
+                IsEmailVerified = x.EmailConfirmed,
+
+                Gender = x.Gender,
+
+                PrimaryStyle = x.PrimaryStyle,
+                SecondaryStyles = x.SecondaryStyles,
+
+                SeasonPreference = x.SeasonPreference,
+
+                PreferredColors = x.PreferredColors,
+                AvoidedColors = x.AvoidedColors,
+
+                FitPreference = x.FitPreference,
+
+                Sizes = x.Sizes.Select(x => new UserSizeResponseDto()
+                {
+                    Id = x.Id,
+                    Label = x.Label,
+                    SizeType = x.SizeType,
+                }),
+
+                AvoidedMaterials = x.AvoidedMaterials,
+            },
+            x => x.Id == userId,
+            cancellationToken: cancellationToken
+        );
+    }
+
     public async Task<Result<IEnumerable<AdminUserResponseDto>>> GetAll(
         int offset,
         int limit,

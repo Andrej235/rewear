@@ -16,6 +16,7 @@ public partial class UserService(
     ITokenService tokenService,
     IReadSingleService<RefreshToken> tokenReadService,
     IReadSingleService<User> userReadService,
+    IReadSingleSelectedService<User> userReadSelectedService,
     IDeleteService<User> deleteService,
     IDeleteService<RefreshToken> tokenDeleteService,
     IResponseMapper<User, UserResponseDto> responseMapper,

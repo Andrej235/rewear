@@ -22,6 +22,21 @@ public partial class UserController
         return Ok(user.Value);
     }
 
+    [Authorize]
+    [HttpGet("me/full")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<FullUserResponseDto>> GetCurrentUserFull(
+        CancellationToken cancellationToken
+    )
+    {
+        var user = await userService.GetFull(User, cancellationToken);
+        if (user.IsFailed)
+            return Unauthorized(user.Errors[0].Message);
+
+        return Ok(user.Value);
+    }
+
     [Authorize(Roles = Roles.Admin)]
     [HttpGet("all")]
     [ProducesResponseType(StatusCodes.Status200OK)]

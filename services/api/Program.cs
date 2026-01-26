@@ -308,6 +308,7 @@ builder.Services.AddHttpClient<GeminiEmbeddingService>(options =>
 #region User
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReadSingleService<User>, ReadService<User>>();
+builder.Services.AddScoped<IReadSingleSelectedService<User>, ReadService<User>>();
 builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
 builder.Services.AddScoped<IResponseMapper<User, UserResponseDto>, UserResponseMapper>();
 #endregion

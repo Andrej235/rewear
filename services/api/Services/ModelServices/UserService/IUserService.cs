@@ -24,6 +24,10 @@ public interface IUserService
         CancellationToken cancellationToken
     );
     Task<Result<UserResponseDto>> Get(ClaimsPrincipal claim, CancellationToken cancellationToken);
+    Task<Result<FullUserResponseDto>> GetFull(
+        ClaimsPrincipal claim,
+        CancellationToken cancellationToken
+    );
 
     Task<Result> Delete(string id);
 
