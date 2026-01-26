@@ -54,6 +54,8 @@ public partial class UserService
         if (updateResult.IsFailed)
             return Result.Fail(updateResult.Errors);
 
+        await userStyleEmbeddingService.GenerateEmbedding(userId);
+
         var sizesCreateResult = await userSizeCreateRangeService.Add(
             request.Sizes.Select(x => new UserSize
             {

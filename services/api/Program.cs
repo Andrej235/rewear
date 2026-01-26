@@ -34,6 +34,7 @@ using ReWear.Services.ModelServices.InventoryItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
 using ReWear.Services.ModelServices.UserService;
+using ReWear.Services.ModelServices.UserStyleEmbeddingService;
 using ReWear.Services.Read;
 using ReWear.Services.Storage;
 using ReWear.Services.Update;
@@ -313,6 +314,18 @@ builder.Services.AddScoped<ICreateRangeService<UserSize>, CreateService<UserSize
 builder.Services.AddScoped<
     ICreateSingleService<UserSubscription>,
     CreateService<UserSubscription>
+>();
+#endregion
+
+#region UserStyleEmbedding
+builder.Services.AddScoped<IUserStyleEmbeddingService, UserStyleEmbeddingService>();
+builder.Services.AddScoped<
+    ICreateSingleService<UserStyleEmbedding>,
+    CreateService<UserStyleEmbedding>
+>();
+builder.Services.AddScoped<
+    IExecuteUpdateService<UserStyleEmbedding>,
+    UpdateService<UserStyleEmbedding>
 >();
 #endregion
 

@@ -130,8 +130,8 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
 
             styleEmbedding
                 .HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.UserId)
+                .WithOne(x => x.StyleEmbedding)
+                .HasForeignKey<UserStyleEmbedding>(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 

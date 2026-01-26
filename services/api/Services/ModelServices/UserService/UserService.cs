@@ -6,12 +6,14 @@ using ReWear.Services.Create;
 using ReWear.Services.Delete;
 using ReWear.Services.Mapping.Response;
 using ReWear.Services.ModelServices.TokenService;
+using ReWear.Services.ModelServices.UserStyleEmbeddingService;
 using ReWear.Services.Read;
 using ReWear.Services.Update;
 
 namespace ReWear.Services.ModelServices.UserService;
 
 public partial class UserService(
+    IUserStyleEmbeddingService userStyleEmbeddingService,
     UserManager<User> userManager,
     SignInManager<User> signInManager,
     IEmailSender<User> emailSender,

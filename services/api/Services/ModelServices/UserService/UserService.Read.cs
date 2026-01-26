@@ -99,6 +99,8 @@ public partial class UserService
                     u.Subscriptions.OrderByDescending(s => s.StartDate)
                         .Select(s => s.SubscriptionPlan.Name)
                         .FirstOrDefault() ?? "No Subscription",
+                LastEmbeddingGeneratedAt =
+                    u.StyleEmbedding != null ? u.StyleEmbedding.UpdatedAt : null,
             });
 
             result = result.OrderBy(u => u.Username);

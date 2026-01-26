@@ -10,4 +10,5 @@ public class AdminUserResponseDto
     public DateTime JoinedAt { get; set; }
 
     public string SubscriptionPlanName { get; set; } = null!;
+    public DateTime? LastEmbeddingGeneratedAt { get; set; }
 }
