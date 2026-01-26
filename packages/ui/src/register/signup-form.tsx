@@ -1,9 +1,11 @@
 "use client";
 import { RegistrationStep2Data } from "@/register/registration-step-2";
 import { Api } from "@repo/lib/api/api";
+import { cn } from "@repo/lib/cn";
 import { LinkComp } from "@repo/lib/types/link-comp";
 import { Navigate } from "@repo/lib/types/navigate";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -21,11 +23,7 @@ import {
   RegistrationStep4,
   RegistrationStep4Data,
 } from "./registration-step-4";
-import {
-  RegistrationStep5,
-  RegistrationStep5Data,
-} from "./registration-step-5";
-import { cn } from "@repo/lib/cn";
+import { RegistrationStep5 } from "./registration-step-5";
 
 export function SignupForm({
   className,
@@ -55,6 +53,8 @@ export function SignupForm({
     }
   }, [currentStep]);
 
+  const emailRef = useRef<string | null>(null);
+
   const [step2Data, setStep2Data] = useState<RegistrationStep2Data>({
     gender: "male",
     primaryStyle: "casual",
@@ -76,11 +76,62 @@ export function SignupForm({
     shoeSize: [],
   });
 
-  const [step5Data, setStep5Data] = useState<RegistrationStep5Data>({
-    selectedPlanId: null,
-  });
+  async function handleCompleteRegistration(selectedPlanId: number) {
+    if (!emailRef.current) {
+      toast.error("Something went wrong. Please start the registration again.");
+      return;
+    }
 
-  async function handleCompleteRegistration() {}
+    const { isOk } = await api.sendRequest(
+      "/users/complete-registration",
+      {
+        method: "put",
+        payload: {
+          email: emailRef.current,
+
+          gender: step2Data.gender,
+          primaryStyle: step2Data.primaryStyle,
+          secondaryStyles: step2Data.secondaryStyles,
+          fitPreference: step2Data.fit,
+          seasonPreference: step2Data.season,
+
+          preferredColors: step3Data.preferredColors,
+          avoidedColors: step3Data.avoidedColors,
+          avoidedMaterials: step3Data.avoidedMaterials,
+
+          sizes: [
+            ...step4Data.topSizes.map((x) => ({
+              sizeType: "top" as const,
+              label: x,
+            })),
+            ...step4Data.bottomWaistSizes.map((x) => ({
+              sizeType: "bottom_waist" as const,
+              label: x,
+            })),
+            ...step4Data.bottomLengthSizes.map((x) => ({
+              sizeType: "bottom_length" as const,
+              label: x,
+            })),
+            ...step4Data.shoeSize.map((x) => ({
+              sizeType: "shoe" as const,
+              label: x,
+            })),
+          ],
+          subscriptionPlanId: selectedPlanId,
+        },
+      },
+      {
+        toasts: {
+          loading: "Creating your account...",
+          success: "Account created successfully!",
+          error: (e) =>
+            e.message || "Failed to create account. Please try again.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+  }
 
   return (
     <Card
@@ -100,7 +151,10 @@ export function SignupForm({
           <RegistrationStep1
             api={api}
             Link={Link}
-            advance={() => setCurrentStep(2)}
+            advance={(x) => {
+              emailRef.current = x;
+              setCurrentStep(2);
+            }}
           />
         )}
 
@@ -135,8 +189,6 @@ export function SignupForm({
             api={api}
             advance={handleCompleteRegistration}
             back={() => setCurrentStep(4)}
-            data={step5Data}
-            setData={setStep5Data}
           />
         )}
       </CardContent>

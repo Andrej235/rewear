@@ -5,29 +5,18 @@ import { cn } from "@repo/lib/cn";
 import { CheckCircle, XCircle } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { Badge } from "../common/badge";
-import { LoadingScreen } from "../loading-screen";
-import { Field, FieldGroup } from "../common/field";
 import { Button } from "../common/button";
-
-export type RegistrationStep5Data = {
-  selectedPlanId: number | null;
-};
+import { Field, FieldGroup } from "../common/field";
+import { LoadingScreen } from "../loading-screen";
 
 export function RegistrationStep5({
   api,
   advance,
   back,
-  setData,
 }: {
   api: Api;
-  advance: () => void;
+  advance: (selectedPlanId: number) => void;
   back: () => void;
-  data: RegistrationStep5Data;
-  setData: (
-    setter:
-      | RegistrationStep5Data
-      | ((prev: RegistrationStep5Data) => RegistrationStep5Data),
-  ) => void;
 }) {
   const plansQuery = useQuery(api, "/subscription-plans/all", {
     queryKey: ["subscription-plans"],
@@ -44,10 +33,7 @@ export function RegistrationStep5({
     e.preventDefault();
     if (!plansQuery.data) return;
 
-    setData({
-      selectedPlanId: plans[selected]!.id,
-    });
-    advance();
+    advance(plans[selected]!.id);
   }
 
   if (plansQuery.isLoading) return <LoadingScreen />;
@@ -65,7 +51,7 @@ export function RegistrationStep5({
           type="button"
           className={cn(
             "flex flex-col gap-4 rounded-md border border-border px-12 py-6 transition-all ease-out hover:border-primary/50 hover:bg-accent/30",
-            i === selected && "lg:-translate-y-2 border-primary bg-primary/30",
+            i === selected && "border-primary bg-primary/30 lg:-translate-y-2",
           )}
           onClick={() => setSelected(i)}
         >
@@ -79,7 +65,7 @@ export function RegistrationStep5({
             <p className="text-sm text-muted-foreground">per month</p>
           </div>
 
-          <ul className="flex-1 space-y-2 text-sm mx-auto lg:mx-0" >
+          <ul className="mx-auto flex-1 space-y-2 text-sm lg:mx-0">
             <li className="flex items-center gap-2">
               <CheckCircle />
 

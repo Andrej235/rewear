@@ -20,7 +20,7 @@ export function RegistrationStep1({
 }: {
   api: Api;
   Link: LinkComp;
-  advance: () => void;
+  advance: (email: string) => void;
 }) {
   type SignupFields = "name" | "email" | "password" | "confirmPassword";
 
@@ -141,7 +141,7 @@ export function RegistrationStep1({
     );
 
     if (!isOk) return;
-    advance();
+    advance(formData.email);
   };
 
   return (

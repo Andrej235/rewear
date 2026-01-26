@@ -18,9 +18,9 @@ public class CreateClothingItemRequestMapper
             GenderTarget = from.GenderTarget,
 
             PrimaryStyle = from.PrimaryStyle,
-            SecondaryStyles = from.SecondaryStyles.ParseFlags(),
+            SecondaryStyles = from.SecondaryStyles.FromFlags(),
 
-            Colors = from.Colors.ParseFlags(),
+            Colors = from.Colors.FromFlags(),
             FitType = from.FitType,
             Season = from.Season,
 

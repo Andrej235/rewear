@@ -20,19 +20,6 @@ public partial class UserController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public Task<OkResult> CheckAuthAdmin() => Task.FromResult(Ok());
 
-    [HttpPost("register")]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Register([FromBody] RegisterRequestDto request)
-    {
-        var result = await userService.Register(request);
-
-        if (result.IsFailed)
-            return BadRequest(new { result.Errors[0].Message });
-
-        return Ok();
-    }
-
     [HttpPost("login")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
