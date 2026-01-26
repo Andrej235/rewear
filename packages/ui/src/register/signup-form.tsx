@@ -17,12 +17,14 @@ import {
   RegistrationStep3,
   RegistrationStep3Data,
 } from "./registration-step-3";
-import { RegistrationStep4 } from "./registration-step-4";
+import {
+  RegistrationStep4,
+  RegistrationStep4Data,
+} from "./registration-step-4";
 
 export function SignupForm({
   className,
   api,
-  navigate,
   LinkComp: Link,
 }: {
   className?: string;
@@ -30,7 +32,7 @@ export function SignupForm({
   navigate: Navigate;
   LinkComp: LinkComp;
 }) {
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(4);
   const description = useMemo(() => {
     switch (currentStep) {
       case 1:
@@ -56,6 +58,13 @@ export function SignupForm({
     preferredColors: [],
     avoidedColors: [],
     avoidedMaterials: [],
+  });
+
+  const [step4Data, setStep4Data] = useState<RegistrationStep4Data>({
+    topSizes: [],
+    bottomWaistSizes: [],
+    bottomLengthSizes: [],
+    shoeSize: [],
   });
 
   return (
@@ -95,6 +104,8 @@ export function SignupForm({
           <RegistrationStep4
             back={() => setCurrentStep(3)}
             advance={() => setCurrentStep(5)}
+            data={step4Data}
+            setData={setStep4Data}
           />
         )}
       </CardContent>
