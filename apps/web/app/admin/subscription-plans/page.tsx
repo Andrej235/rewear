@@ -53,7 +53,7 @@ import { api } from "../../../lib/api.client";
 
 export default function Page() {
   const queryClient = useQueryClient();
-  const plans = useQuery(api, "/subscription-plans/all", {
+  const plans = useQuery(api, "/subscription-plans/all/admin", {
     queryKey: ["admin-subscription-plans"],
   });
 

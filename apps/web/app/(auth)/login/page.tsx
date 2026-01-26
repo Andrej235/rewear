@@ -11,7 +11,6 @@ export default function LoginPage(): JSX.Element {
   return (
     <div className="grid h-screen w-screen place-items-center">
       <LoginForm
-        className="w-lg"
         api={api}
         onLogin={() => router.push("/")}
         LinkComp={Link}

@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from "./common/field";
 import { Input } from "./common/input";
+import { cn } from "@repo/lib/cn";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -90,7 +91,12 @@ export function LoginForm({
   };
 
   return (
-    <Card className={className}>
+    <Card
+      className={cn(
+        "max-h-[70vh] w-full max-w-[90vw] sm:w-auto sm:min-w-lg",
+        className,
+      )}
+    >
       <CardHeader>
         <CardTitle>Login to your account</CardTitle>
         <CardDescription>
@@ -98,7 +104,7 @@ export function LoginForm({
         </CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="overflow-auto">
         <form onSubmit={handleSubmit}>
           <FieldGroup>
             <Field data-invalid={touched.email && errors.email.length !== 0}>

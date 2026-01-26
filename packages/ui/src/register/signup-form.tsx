@@ -21,6 +21,11 @@ import {
   RegistrationStep4,
   RegistrationStep4Data,
 } from "./registration-step-4";
+import {
+  RegistrationStep5,
+  RegistrationStep5Data,
+} from "./registration-step-5";
+import { cn } from "@repo/lib/cn";
 
 export function SignupForm({
   className,
@@ -32,7 +37,7 @@ export function SignupForm({
   navigate: Navigate;
   LinkComp: LinkComp;
 }) {
-  const [currentStep, setCurrentStep] = useState(4);
+  const [currentStep, setCurrentStep] = useState(1);
   const description = useMemo(() => {
     switch (currentStep) {
       case 1:
@@ -43,6 +48,10 @@ export function SignupForm({
         return "Tell us what you like to wear so we can provide you with better recommendations";
       case 4:
         return "Tell us what sizes you wear so we can only recommend clothes that we have in stock";
+      case 5:
+        return "Choose a subscription plan that fits your needs";
+      default:
+        return "Create your account";
     }
   }, [currentStep]);
 
@@ -67,14 +76,26 @@ export function SignupForm({
     shoeSize: [],
   });
 
+  const [step5Data, setStep5Data] = useState<RegistrationStep5Data>({
+    selectedPlanId: null,
+  });
+
+  async function handleCompleteRegistration() {}
+
   return (
-    <Card className={className}>
+    <Card
+      className={cn(
+        "max-h-[70vh] w-full max-w-[90vw] sm:w-auto sm:min-w-lg",
+        currentStep !== 5 && "lg:max-w-lg",
+        className,
+      )}
+    >
       <CardHeader>
         <CardTitle>Create an account</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="overflow-auto">
         {currentStep === 1 && (
           <RegistrationStep1
             api={api}
@@ -106,6 +127,16 @@ export function SignupForm({
             advance={() => setCurrentStep(5)}
             data={step4Data}
             setData={setStep4Data}
+          />
+        )}
+
+        {currentStep === 5 && (
+          <RegistrationStep5
+            api={api}
+            advance={handleCompleteRegistration}
+            back={() => setCurrentStep(4)}
+            data={step5Data}
+            setData={setStep5Data}
           />
         )}
       </CardContent>

@@ -27,7 +27,7 @@ public partial class SubscriptionPlanService
         );
     }
 
-    public Task<Result<IEnumerable<AdminSubscriptionPlanResponseDto>>> GetAll(
+    public Task<Result<IEnumerable<AdminSubscriptionPlanResponseDto>>> AdminGetAll(
         CancellationToken cancellationToken
     )
     {
@@ -41,6 +41,25 @@ public partial class SubscriptionPlanService
                 MaxItemsPerMonth = x.MaxItemsPerMonth,
                 MonthlyPrice = x.MonthlyPrice,
                 SubscriptionsCount = x.Subscriptions.Count,
+            },
+            null,
+            cancellationToken: cancellationToken
+        );
+    }
+
+    public Task<Result<IEnumerable<SubscriptionPlanResponseDto>>> GetAll(
+        CancellationToken cancellationToken
+    )
+    {
+        return readRangeService.Get(
+            x => new SubscriptionPlanResponseDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                AllowsOuterwear = x.AllowsOuterwear,
+                AllowsShoes = x.AllowsShoes,
+                MaxItemsPerMonth = x.MaxItemsPerMonth,
+                MonthlyPrice = x.MonthlyPrice,
             },
             null,
             cancellationToken: cancellationToken
