@@ -141,13 +141,13 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
             subscription.HasIndex(x => new { x.UserId, x.SubscriptionPlanId });
 
             subscription
-                .HasOne<User>()
+                .HasOne(x => x.User)
                 .WithMany(x => x.Subscriptions)
                 .HasForeignKey(x => x.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             subscription
-                .HasOne<SubscriptionPlan>()
+                .HasOne(x => x.SubscriptionPlan)
                 .WithMany(x => x.Subscriptions)
                 .HasForeignKey(x => x.SubscriptionPlanId)
                 .OnDelete(DeleteBehavior.Restrict);

@@ -8,4 +8,6 @@ public class AdminUserResponseDto
     public string Role { get; set; } = null!;
     public bool Verified { get; set; }
     public DateTime JoinedAt { get; set; }
+
+    public string SubscriptionPlanName { get; set; } = null!;
 }

@@ -95,6 +95,10 @@ public partial class UserService
                         .Join(context.Roles, ur => ur.RoleId, r => r.Id, (ur, r) => r.Name)
                         .FirstOrDefault() ?? "No Role",
                 JoinedAt = u.CreatedAt,
+                SubscriptionPlanName =
+                    u.Subscriptions.OrderByDescending(s => s.StartDate)
+                        .Select(s => s.SubscriptionPlan.Name)
+                        .FirstOrDefault() ?? "No Subscription",
             });
 
             result = result.OrderBy(u => u.Username);

@@ -196,8 +196,7 @@ export default function AdminUsersPage() {
                       )}
                     </TableCell>
                     <TableCell>{user.role}</TableCell>
-                    {/* TODO: Implement */}
-                    <TableCell>{"Premium"}</TableCell>
+                    <TableCell>{user.subscriptionPlanName}</TableCell>
 
                     <TableCell className="text-right">
                       <DropdownMenu>
