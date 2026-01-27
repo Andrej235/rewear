@@ -32,26 +32,6 @@ public partial class ClothingItemService
 
         var userSizes = userSizesResult?.Value ?? [];
 
-        var topSizes = userSizes
-            .Where(x => x.SizeType == SizeType.Top)
-            .Select(x => x.Label)
-            .ToList();
-
-        var bottomWaistSizes = userSizes
-            .Where(x => x.SizeType == SizeType.BottomWaist)
-            .Select(x => x.Label)
-            .ToList();
-
-        var bottomLengthSizes = userSizes
-            .Where(x => x.SizeType == SizeType.BottomLength)
-            .Select(x => x.Label)
-            .ToList();
-
-        var shoeSizes = userSizes
-            .Where(x => x.SizeType == SizeType.Shoe)
-            .Select(x => x.Label)
-            .ToList();
-
         var items = await readRangeService.Get(
             x => new ClothingItemPreviewResponseDto
             {
@@ -60,41 +40,12 @@ public partial class ClothingItemService
                 Description = x.Description,
                 ImageUrl = x.ImageUrl,
             },
-            ci =>
-                ci.IsActive
-                && (
-                    !filters.OnlyInStock
-                    || ci.InInventory.Any(ii =>
-                        (
-                            (
-                                ci.Category == ClothingCategory.Top
-                                || ci.Category == ClothingCategory.Outerwear
-                            )
-                            && ii.TopSize != null
-                            && topSizes.Contains(ii.TopSize)
-                        )
-                        || (
-                            ci.Category == ClothingCategory.Bottom
-                            && ii.BottomWaistSize != null
-                            && ii.BottomLengthSize != null
-                            && bottomWaistSizes.Contains(ii.BottomWaistSize)
-                            && bottomLengthSizes.Contains(ii.BottomLengthSize)
-                        )
-                        || (
-                            ci.Category == ClothingCategory.Footwear
-                            && ii.ShoeSize != null
-                            && shoeSizes.Contains(ii.ShoeSize)
-                        )
-                    )
-                )
-                && (filters.Gender == null || (ci.GenderTarget & filters.Gender.FromFlags()) != 0)
-                && (
-                    filters.Categories == null
-                    || (ci.Category & filters.Categories.FromFlags()) != 0
-                ),
+            filters.Strict ? GetStrictWhere(filters, userSizes) : GetWhere(filters, userSizes),
             filters.Offset,
             filters.Limit,
-            q => q.OrderByDescending(GetOrderByScore(filters)).ThenByDescending(x => x.Name),
+            filters.Strict
+                ? q => q.OrderByDescending(x => x.Name)
+                : q => q.OrderByDescending(GetOrderByScore(filters)).ThenByDescending(x => x.Name),
             ct
         );
 
@@ -126,10 +77,143 @@ public partial class ClothingItemService
             // Season match
             + (filters.Season != null && ci.Season == filters.Season ? 12 : 0)
             // Material match
-            + (materialMask != 0 && (ci.Material & materialMask) != 0 ? 10 : 0)
-            // Category match
-            + (categoryMask != 0 && (ci.Category & categoryMask) != 0 ? 12 : 0)
-            // Gender match
-            + (genderMask != 0 && (ci.GenderTarget & genderMask) != 0 ? 12 : 0);
+            + (materialMask != 0 && (ci.Material & materialMask) != 0 ? 10 : 0);
+    }
+
+    static Expression<Func<ClothingItem, bool>> GetWhere(
+        GetClothingItemFiltersRequestDto filters,
+        IEnumerable<UserSize> userSizes
+    )
+    {
+        var topSizes = userSizes
+            .Where(x => x.SizeType == SizeType.Top)
+            .Select(x => x.Label)
+            .ToList();
+
+        var bottomWaistSizes = userSizes
+            .Where(x => x.SizeType == SizeType.BottomWaist)
+            .Select(x => x.Label)
+            .ToList();
+
+        var bottomLengthSizes = userSizes
+            .Where(x => x.SizeType == SizeType.BottomLength)
+            .Select(x => x.Label)
+            .ToList();
+
+        var shoeSizes = userSizes
+            .Where(x => x.SizeType == SizeType.Shoe)
+            .Select(x => x.Label)
+            .ToList();
+
+        return ci =>
+            ci.IsActive
+            && (
+                !filters.OnlyInStock
+                || ci.InInventory.Any(ii =>
+                    (
+                        (
+                            ci.Category == ClothingCategory.Top
+                            || ci.Category == ClothingCategory.Outerwear
+                        )
+                        && ii.TopSize != null
+                        && topSizes.Contains(ii.TopSize)
+                    )
+                    || (
+                        ci.Category == ClothingCategory.Bottom
+                        && ii.BottomWaistSize != null
+                        && ii.BottomLengthSize != null
+                        && bottomWaistSizes.Contains(ii.BottomWaistSize)
+                        && bottomLengthSizes.Contains(ii.BottomLengthSize)
+                    )
+                    || (
+                        ci.Category == ClothingCategory.Footwear
+                        && ii.ShoeSize != null
+                        && shoeSizes.Contains(ii.ShoeSize)
+                    )
+                )
+            )
+            && (filters.Gender == null || (ci.GenderTarget & filters.Gender.FromFlags()) != 0)
+            && (filters.Categories == null || (ci.Category & filters.Categories.FromFlags()) != 0);
+    }
+
+    static Expression<Func<ClothingItem, bool>> GetStrictWhere(
+        GetClothingItemFiltersRequestDto filters,
+        IEnumerable<UserSize> userSizes
+    )
+    {
+        var topSizes = userSizes
+            .Where(x => x.SizeType == SizeType.Top)
+            .Select(x => x.Label)
+            .ToList();
+
+        var bottomWaistSizes = userSizes
+            .Where(x => x.SizeType == SizeType.BottomWaist)
+            .Select(x => x.Label)
+            .ToList();
+
+        var bottomLengthSizes = userSizes
+            .Where(x => x.SizeType == SizeType.BottomLength)
+            .Select(x => x.Label)
+            .ToList();
+
+        var shoeSizes = userSizes
+            .Where(x => x.SizeType == SizeType.Shoe)
+            .Select(x => x.Label)
+            .ToList();
+
+        var colorsMask = filters.Colors?.FromFlags() ?? 0;
+        var stylesMask = filters.Styles?.FromFlags() ?? 0;
+        var fitMask = filters.FitTypes?.FromFlags() ?? 0;
+        var categoryMask = filters.Categories?.FromFlags() ?? 0;
+        var genderMask = filters.Gender?.FromFlags() ?? 0;
+        var materialMask = filters.Materials?.FromFlags() ?? 0;
+
+        return ci =>
+            ci.IsActive
+            && (
+                !filters.OnlyInStock
+                || ci.InInventory.Any(ii =>
+                    (
+                        (
+                            ci.Category == ClothingCategory.Top
+                            || ci.Category == ClothingCategory.Outerwear
+                        )
+                        && ii.TopSize != null
+                        && topSizes.Contains(ii.TopSize)
+                    )
+                    || (
+                        ci.Category == ClothingCategory.Bottom
+                        && ii.BottomWaistSize != null
+                        && ii.BottomLengthSize != null
+                        && bottomWaistSizes.Contains(ii.BottomWaistSize)
+                        && bottomLengthSizes.Contains(ii.BottomLengthSize)
+                    )
+                    || (
+                        ci.Category == ClothingCategory.Footwear
+                        && ii.ShoeSize != null
+                        && shoeSizes.Contains(ii.ShoeSize)
+                    )
+                )
+            )
+            // Gender
+            && (filters.Gender == null || (ci.GenderTarget & filters.Gender.FromFlags()) != 0)
+            // Category
+            && (filters.Categories == null || (ci.Category & filters.Categories.FromFlags()) != 0)
+            // Name
+            && (filters.Name == null || ci.Name.Contains(filters.Name))
+            // Style
+            && (
+                stylesMask == 0
+                || (ci.PrimaryStyle & stylesMask) != 0
+                || (ci.SecondaryStyles & stylesMask) != 0
+            )
+            // Color
+            && (colorsMask == 0 || (ci.Colors & colorsMask) != 0)
+            // Fit
+            && (fitMask == 0 || (ci.FitType & fitMask) != 0)
+            // Season
+            && (filters.Season == null || ci.Season == filters.Season)
+            // Material
+            && (materialMask == 0 || (ci.Material & materialMask) != 0);
     }
 }

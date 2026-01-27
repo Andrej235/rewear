@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using ReWear.Models.Enums;
 
 namespace ReWear.Dtos.Request.ClothingItem;
@@ -15,6 +16,9 @@ public class GetClothingItemFiltersRequestDto
     public bool OnlyInStock { get; set; } = false;
     public bool Strict { get; set; } = false;
 
+    [Range(0, int.MaxValue)]
     public int Offset { get; set; } = 0;
+
+    [Range(1, 100)]
     public int Limit { get; set; } = 25;
 }

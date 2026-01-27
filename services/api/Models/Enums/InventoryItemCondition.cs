@@ -2,12 +2,12 @@ namespace ReWear.Models.Enums;
 
 public enum InventoryItemCondition
 {
-    None,
-    New,
-    LikeNew,
-    VeryGood,
-    Good,
-    Acceptable,
-    Poor,
-    Damaged,
+    None = 0,
+    New = 1 << 0,
+    LikeNew = 1 << 1,
+    VeryGood = 1 << 2,
+    Good = 1 << 3,
+    Acceptable = 1 << 4,
+    Poor = 1 << 5,
+    Damaged = 1 << 6,
 }
