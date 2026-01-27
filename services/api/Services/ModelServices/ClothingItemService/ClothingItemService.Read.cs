@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Response.ClothingItem;
+using ReWear.Services.Read;
 using ReWear.Utilities;
 
 namespace ReWear.Services.ModelServices.ClothingItemService;

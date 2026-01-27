@@ -311,6 +311,7 @@ builder.Services.AddScoped<IExecuteUpdateService<User>, UpdateService<User>>();
 builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
 
 builder.Services.AddScoped<ICreateRangeService<UserSize>, CreateService<UserSize>>();
+builder.Services.AddScoped<IReadRangeService<UserSize>, ReadService<UserSize>>();
 builder.Services.AddScoped<
     ICreateSingleService<UserSubscription>,
     CreateService<UserSubscription>

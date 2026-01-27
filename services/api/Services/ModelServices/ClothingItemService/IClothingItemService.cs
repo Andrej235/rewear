@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Response.ClothingItem;
@@ -14,6 +15,13 @@ public interface IClothingItemService
     );
     Task<Result<IEnumerable<AdminClothingItemResponseDto>>> GetAll(
         CancellationToken cancellationToken
+    );
+    Task<Result<IEnumerable<ClothingItemPreviewResponseDto>>> GetPreviews(
+        ClaimsPrincipal userClaims,
+        bool onlyInStock,
+        int offset,
+        int limit,
+        CancellationToken ct
     );
 
     Task<Result> Update(UpdateClothingItemRequestDto request);

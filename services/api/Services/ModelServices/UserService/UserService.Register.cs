@@ -59,7 +59,7 @@ public partial class UserService
         var sizesCreateResult = await userSizeCreateRangeService.Add(
             request.Sizes.Select(x => new UserSize
             {
-                Label = x.Label,
+                Label = x.Label.ToUpper(),
                 SizeType = x.SizeType,
                 UserId = userId,
             })
