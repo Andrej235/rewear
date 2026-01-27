@@ -21,6 +21,7 @@ public interface IClothingItemService
         GetClothingItemFiltersRequestDto filters,
         CancellationToken ct
     );
+    Task<Result<FullClothingItemResponseDto>> GetFullById(Guid id, CancellationToken ct);
 
     Task<Result> Update(UpdateClothingItemRequestDto request);
     Task<Result> UpdateImage(Guid id, IFormFile imageStream);

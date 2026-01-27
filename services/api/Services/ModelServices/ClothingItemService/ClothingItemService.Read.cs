@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Response.ClothingItem;
+using ReWear.Models.Enums;
 using ReWear.Services.Read;
 using ReWear.Utilities;
 
@@ -79,5 +80,54 @@ public partial class ClothingItemService
             null,
             cancellationToken: cancellationToken
         );
+    }
+
+    public async Task<Result<FullClothingItemResponseDto>> GetFullById(
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var result = await readService.Get(
+            x => new FullClothingItemResponseDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Description = x.Description,
+                ImageUrl = x.ImageUrl,
+
+                Category = x.Category,
+                GenderTarget = x.GenderTarget,
+
+                PrimaryStyle = x.PrimaryStyle,
+                SecondaryStyles = x.SecondaryStyles.ToFlags(),
+
+                Colors = x.Colors.ToFlags(),
+                FitType = x.FitType,
+                Season = x.Season,
+
+                Material = x.Material,
+                BrandName = x.BrandName,
+
+                Sizes = x
+                    .InInventory.Select(i =>
+                        i.Category == ClothingCategory.Top
+                        || i.Category == ClothingCategory.Outerwear
+                            ? i.TopSize!
+                        : i.Category == ClothingCategory.Bottom
+                            ? i.BottomWaistSize! + " x " + i.BottomLengthSize!
+                        : i.Category == ClothingCategory.Footwear ? i.ShoeSize!
+                        : null!
+                    )
+                    .Where(size => size != null),
+            },
+            x => x.Id == id,
+            cancellationToken: ct
+        );
+
+        if (result.IsFailed)
+            return Result.Fail(result.Errors);
+
+        result.Value.Sizes = result.Value.Sizes.Distinct();
+        return result.Value;
     }
 }

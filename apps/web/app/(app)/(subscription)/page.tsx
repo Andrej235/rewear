@@ -84,7 +84,7 @@ type Filters = {
   name: string;
   categories: Schema<"ClothingCategory">[];
   gender: Schema<"GenderTarget">[];
-  colors: string[];
+  colors: Schema<"Color">[];
   styles: Schema<"Style">[];
   fitTypes: Schema<"Fit">[];
   season: Schema<"Season">;
@@ -355,7 +355,7 @@ export default function Home(): JSX.Element {
               onValueChange={(value) =>
                 setFilters((prev) => ({
                   ...prev,
-                  colors: value,
+                  colors: value as Schema<"Color">[],
                 }))
               }
             >
@@ -519,32 +519,27 @@ export default function Home(): JSX.Element {
       {/* Previews */}
       <div className="grid content-start gap-4 md:grid-cols-2 xl:grid-cols-3">
         {previews.data?.map((item) => (
-          <Card
-            className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary"
-            key={item.id}
-          >
-            <Image
-              src={item.imageUrl}
-              alt={item.name}
-              width={512}
-              height={256}
-              className="h-64 w-full rounded object-cover"
-            />
+          <Link key={item.id} href={item.id}>
+            <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
+              <Image
+                src={item.imageUrl}
+                alt={item.name}
+                width={512}
+                height={256}
+                className="h-64 w-full rounded object-cover"
+              />
 
-            <CardHeader>
-              <CardTitle>
-                <Link href={`/admin/clothing-items/${item.id}`}>
-                  {item.name}
-                </Link>
-              </CardTitle>
+              <CardHeader>
+                <CardTitle>{item.name}</CardTitle>
 
-              <CardDescription className="flex min-w-0 items-center">
-                {item.description.length > 200
-                  ? item.description.slice(0, 200) + "..."
-                  : item.description || "No description"}
-              </CardDescription>
-            </CardHeader>
-          </Card>
+                <CardDescription className="flex min-w-0 items-center">
+                  {item.description.length > 200
+                    ? item.description.slice(0, 200) + "..."
+                    : item.description || "No description"}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
