@@ -50,7 +50,7 @@ public partial class ClothingItemController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<List<AdminClothingItemResponseDto>>> ReadPreviews(
+    public async Task<ActionResult<List<ClothingItemPreviewResponseDto>>> ReadPreviews(
         CancellationToken cancellationToken,
         [FromQuery] bool onlyInStock = false,
         [FromQuery] int offset = 0,

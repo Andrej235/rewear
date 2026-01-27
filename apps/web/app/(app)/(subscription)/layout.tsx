@@ -20,7 +20,7 @@ export default async function RootAppLayout({
   if (!user.hasSubscription) return redirect("/setup");
 
   return (
-    <div className="flex h-svh w-screen flex-col">
+    <div className="flex min-h-screen flex-col">
       <AppHeader />
       <main className="flex-1">{children}</main>
       <AppFooter />

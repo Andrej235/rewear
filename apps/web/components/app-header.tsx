@@ -36,7 +36,7 @@ export function AppHeader() {
     <header
       className={cn(
         pagePaddingX,
-        "flex w-full items-center justify-between border-b bg-card/70 py-4",
+        "sticky top-0 z-50 flex w-full items-center justify-between border-b bg-card/70 py-4",
       )}
     >
       {/* Brand */}
