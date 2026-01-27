@@ -6,7 +6,7 @@ import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { FormEvent, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "./common/button";
+import { Button } from "../common/button";
 import {
   Card,
   CardContent,
@@ -14,16 +14,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./common/card";
-import { Field, FieldError, FieldLabel } from "./common/field";
-import { Input } from "./common/input";
+} from "../common/card";
+import { Field, FieldError, FieldLabel } from "../common/field";
+import { Input } from "../common/input";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "./common/input-otp";
-import { CountdownTimer } from "./countdown-timer";
+} from "../common/input-otp";
+import { CountdownTimer } from "../countdown-timer";
 
 export function ResetPassword({
   api,

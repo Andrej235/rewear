@@ -1,5 +1,5 @@
 "use client";
-import { ResetPassword } from "@repo/ui/reset-password";
+import { ResetPassword } from "@repo/ui/auth/reset-password";
 import { useRouter, useSearchParams } from "next/navigation";
 import { JSX } from "react";
 import { api } from "../../../lib/api.client";

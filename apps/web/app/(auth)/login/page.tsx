@@ -1,5 +1,5 @@
 "use client";
-import { LoginForm } from "@repo/ui/login-form";
+import { LoginForm } from "@repo/ui/auth/login-form";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { JSX } from "react";

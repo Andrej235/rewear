@@ -1,13 +1,13 @@
 "use client";
-import { Button } from "./common/button";
+import { Button } from "../common/button";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "./common/field";
-import { Input } from "./common/input";
+} from "../common/field";
+import { Input } from "../common/input";
 import { Api } from "@repo/lib/api/api";
 import { cn } from "@repo/lib/cn";
 import { LinkComp } from "@repo/lib/types/link-comp";
@@ -20,7 +20,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./common/card";
+} from "../common/card";
 
 export function SignupForm({
   className,
