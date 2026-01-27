@@ -1,10 +1,13 @@
+using System.Linq.Expressions;
 using System.Security.Claims;
 using FluentResults;
 using Resend;
+using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Response.ClothingItem;
 using ReWear.Models;
 using ReWear.Models.Enums;
 using ReWear.Services.Read;
+using ReWear.Utilities;
 
 namespace ReWear.Services.ModelServices.ClothingItemService;
 
@@ -12,9 +15,7 @@ public partial class ClothingItemService
 {
     public async Task<Result<IEnumerable<ClothingItemPreviewResponseDto>>> GetPreviews(
         ClaimsPrincipal userClaims,
-        bool onlyInStock,
-        int offset,
-        int limit,
+        GetClothingItemFiltersRequestDto filters,
         CancellationToken ct
     )
     {
@@ -22,7 +23,7 @@ public partial class ClothingItemService
         if (userId is null)
             return Result.Fail("User not found");
 
-        var userSizesResult = !onlyInStock
+        var userSizesResult = !filters.OnlyInStock
             ? null
             : await userSizeReadService.Get(x => x.UserId == userId, cancellationToken: ct);
 
@@ -62,7 +63,7 @@ public partial class ClothingItemService
             ci =>
                 ci.IsActive
                 && (
-                    !onlyInStock
+                    !filters.OnlyInStock
                     || ci.InInventory.Any(ii =>
                         (
                             (
@@ -85,13 +86,50 @@ public partial class ClothingItemService
                             && shoeSizes.Contains(ii.ShoeSize)
                         )
                     )
+                )
+                && (filters.Gender == null || (ci.GenderTarget & filters.Gender.FromFlags()) != 0)
+                && (
+                    filters.Categories == null
+                    || (ci.Category & filters.Categories.FromFlags()) != 0
                 ),
-            offset,
-            limit,
-            q => q.OrderBy(x => x.Id),
+            filters.Offset,
+            filters.Limit,
+            q => q.OrderByDescending(GetOrderByScore(filters)).ThenByDescending(x => x.Name),
             ct
         );
 
         return items;
+    }
+
+    static Expression<Func<ClothingItem, int>> GetOrderByScore(
+        GetClothingItemFiltersRequestDto filters
+    )
+    {
+        var colorsMask = filters.Colors?.FromFlags() ?? 0;
+        var stylesMask = filters.Styles?.FromFlags() ?? 0;
+        var fitMask = filters.FitTypes?.FromFlags() ?? 0;
+        var categoryMask = filters.Categories?.FromFlags() ?? 0;
+        var genderMask = filters.Gender?.FromFlags() ?? 0;
+        var materialMask = filters.Materials?.FromFlags() ?? 0;
+
+        return ci =>
+            // Name match (bonus, not required)
+            (filters.Name != null && ci.Name.Contains(filters.Name) ? 35 : 0)
+            // Strong style match
+            + (stylesMask != 0 && (ci.PrimaryStyle & stylesMask) != 0 ? 40 : 0)
+            // Secondary style match (flags)
+            + (stylesMask != 0 && (ci.SecondaryStyles & stylesMask) != 0 ? 20 : 0)
+            // Color match (flags)
+            + (colorsMask != 0 && (ci.Colors & colorsMask) != 0 ? 18 : 0)
+            // Fit match (flags)
+            + (fitMask != 0 && (ci.FitType & fitMask) != 0 ? 25 : 0)
+            // Season match
+            + (filters.Season != null && ci.Season == filters.Season ? 12 : 0)
+            // Material match
+            + (materialMask != 0 && (ci.Material & materialMask) != 0 ? 10 : 0)
+            // Category match
+            + (categoryMask != 0 && (ci.Category & categoryMask) != 0 ? 12 : 0)
+            // Gender match
+            + (genderMask != 0 && (ci.GenderTarget & genderMask) != 0 ? 12 : 0);
     }
 }

@@ -18,9 +18,7 @@ public interface IClothingItemService
     );
     Task<Result<IEnumerable<ClothingItemPreviewResponseDto>>> GetPreviews(
         ClaimsPrincipal userClaims,
-        bool onlyInStock,
-        int offset,
-        int limit,
+        GetClothingItemFiltersRequestDto filters,
         CancellationToken ct
     );
 

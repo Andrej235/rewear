@@ -31,6 +31,7 @@ import Link from "next/link";
 import { JSX, useState } from "react";
 import { api } from "../../../lib/api.client";
 import { pagePaddingX } from "../../../lib/page-padding";
+import { useLocalStorage } from "usehooks-ts";
 
 const categories: Schema<"ClothingCategory">[] = [
   "top",
@@ -92,26 +93,41 @@ type Filters = {
   strict: boolean;
 };
 
+const baseFilters: Filters = {
+  name: "",
+  gender: [],
+  categories: [],
+  styles: [],
+  colors: [],
+  fitTypes: [],
+  season: "all",
+  materials: [],
+  onlyInStock: true,
+  strict: false,
+};
+
 export default function Home(): JSX.Element {
   const [page, setPage] = useState(0);
-  const [filters, setFilters] = useState<Filters>({
-    name: "",
-    gender: [],
-    categories: [],
-    styles: [],
-    colors: [],
-    fitTypes: [],
-    season: "all",
-    materials: [],
-    onlyInStock: true,
-    strict: false,
-  });
+  const [filters, setFilters] = useLocalStorage<Filters>(
+    "clothing-item-filters",
+    baseFilters,
+  );
 
   const previews = useQuery(api, "/clothing-items/previews", {
     parameters: {
-      onlyInStock: filters.onlyInStock,
-      limit: 20,
-      offset: page * 20,
+      Limit: 20,
+      Offset: page * 20,
+      Name: filters.name.length > 0 ? filters.name : undefined,
+      OnlyInStock: filters.onlyInStock,
+      Strict: filters.strict,
+      Categories:
+        filters.categories.length > 0 ? filters.categories : undefined,
+      Colors: filters.colors.length > 0 ? filters.colors : undefined,
+      FitTypes: filters.fitTypes.length > 0 ? filters.fitTypes : undefined,
+      Gender: filters.gender.length > 0 ? filters.gender : undefined,
+      Styles: filters.styles.length > 0 ? filters.styles : undefined,
+      Materials: filters.materials.length > 0 ? filters.materials : undefined,
+      Season: filters.season !== "all" ? filters.season : undefined,
     },
     queryKey: ["clothing-item-previews"],
   });
@@ -436,6 +452,7 @@ export default function Home(): JSX.Element {
           </CollapsibleContent>
         </Collapsible>
 
+        {/* Only in stock */}
         <FieldLabel>
           <Field orientation="horizontal">
             <FieldContent>
@@ -461,6 +478,7 @@ export default function Home(): JSX.Element {
           </Field>
         </FieldLabel>
 
+        {/* Strict filters */}
         <FieldLabel>
           <Field orientation="horizontal">
             <FieldContent>
@@ -488,6 +506,13 @@ export default function Home(): JSX.Element {
 
         <Button className="mt-4" onClick={applyFilters}>
           Apply Filters
+        </Button>
+
+        <Button
+          onClick={() => setFilters({ ...baseFilters })}
+          variant="outline"
+        >
+          Reset filters
         </Button>
       </div>
 

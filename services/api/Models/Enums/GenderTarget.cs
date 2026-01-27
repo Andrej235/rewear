@@ -2,8 +2,8 @@ namespace ReWear.Models.Enums;
 
 public enum GenderTarget
 {
-    None,
-    Male,
-    Female,
-    Unisex,
+    None = 0,
+    Male = 1,
+    Female = 2,
+    Unisex = 4,
 }

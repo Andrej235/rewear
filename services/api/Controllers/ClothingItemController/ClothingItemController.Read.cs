@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Response.ClothingItem;
 using ReWear.Utilities;
 
@@ -52,18 +53,10 @@ public partial class ClothingItemController
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<List<ClothingItemPreviewResponseDto>>> ReadPreviews(
         CancellationToken cancellationToken,
-        [FromQuery] bool onlyInStock = false,
-        [FromQuery] int offset = 0,
-        [FromQuery] int limit = 25
+        [FromQuery] GetClothingItemFiltersRequestDto filters
     )
     {
-        var result = await itemService.GetPreviews(
-            User,
-            onlyInStock,
-            offset,
-            limit,
-            cancellationToken
-        );
+        var result = await itemService.GetPreviews(User, filters, cancellationToken);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);
