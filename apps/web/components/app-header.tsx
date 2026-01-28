@@ -40,7 +40,7 @@ export function AppHeader() {
       )}
     >
       {/* Brand */}
-      <div className="flex items-center gap-4">
+      <Link href="/" className="flex items-center gap-4">
         <Image
           src="/placeholder.svg"
           alt="ReWear Logo"
@@ -50,7 +50,7 @@ export function AppHeader() {
           height={48}
         />
         <h2 className="text-lg font-semibold">ReWear</h2>
-      </div>
+      </Link>
 
       {/* Desktop Navigation */}
       <nav className="ml-auto hidden space-x-6 md:flex">
