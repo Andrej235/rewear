@@ -2,22 +2,22 @@
 import { Api } from "@repo/lib/api/api";
 import { LinkComp } from "@repo/lib/types/link-comp";
 import { FormEvent, JSX, useState } from "react";
-import { Button } from "./common/button";
+import { Button } from "../common/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "./common/card";
+} from "../common/card";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "./common/field";
-import { Input } from "./common/input";
+} from "../common/field";
+import { Input } from "../common/input";
 import { cn } from "@repo/lib/cn";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

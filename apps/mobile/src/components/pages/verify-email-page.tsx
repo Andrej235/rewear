@@ -1,5 +1,5 @@
 import { useUserStore } from "@repo/lib/stores/user-store";
-import { EmailVerification } from "@repo/ui/email-verification";
+import { EmailVerification } from "@repo/ui/auth/email-verification";
 import { useNavigate } from "react-router";
 import { api } from "../../lib/api";
 

@@ -30,6 +30,7 @@ using ReWear.Services.Mapping.Request.InventoryItemMappers;
 using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
 using ReWear.Services.ModelServices.ClothingItemEmbeddingService;
 using ReWear.Services.ModelServices.ClothingItemService;
+using ReWear.Services.ModelServices.DeliveryBoxService;
 using ReWear.Services.ModelServices.InventoryItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
@@ -82,7 +83,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(
-        new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)
+        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
     );
     options.SerializerOptions.RespectNullableAnnotations = true;
 });
@@ -311,6 +312,8 @@ builder.Services.AddScoped<IExecuteUpdateService<User>, UpdateService<User>>();
 builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
 
 builder.Services.AddScoped<ICreateRangeService<UserSize>, CreateService<UserSize>>();
+builder.Services.AddScoped<IReadRangeService<UserSize>, ReadService<UserSize>>();
+builder.Services.AddScoped<IReadRangeSelectedService<UserSize>, ReadService<UserSize>>();
 builder.Services.AddScoped<
     ICreateSingleService<UserSubscription>,
     CreateService<UserSubscription>
@@ -322,6 +325,10 @@ builder.Services.AddScoped<IUserStyleEmbeddingService, UserStyleEmbeddingService
 builder.Services.AddScoped<
     ICreateSingleService<UserStyleEmbedding>,
     CreateService<UserStyleEmbedding>
+>();
+builder.Services.AddScoped<
+    IReadSingleSelectedService<UserStyleEmbedding>,
+    ReadService<UserStyleEmbedding>
 >();
 builder.Services.AddScoped<
     IExecuteUpdateService<UserStyleEmbedding>,
@@ -399,12 +406,26 @@ builder.Services.AddScoped<
 #region InventoryItem
 builder.Services.AddScoped<IInventoryItemService, InventoryItemService>();
 builder.Services.AddScoped<ICreateRangeService<InventoryItem>, CreateService<InventoryItem>>();
+builder.Services.AddScoped<IReadRangeSelectedService<InventoryItem>, ReadService<InventoryItem>>();
 builder.Services.AddScoped<IExecuteUpdateService<InventoryItem>, UpdateService<InventoryItem>>();
 builder.Services.AddScoped<IDeleteService<InventoryItem>, DeleteService<InventoryItem>>();
 builder.Services.AddScoped<
     IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>>,
     AddStockRequestMapper
 >();
+#endregion
+
+#region DeliveryBox
+builder.Services.AddScoped<IDeliveryBoxService, DeliveryBoxService>();
+builder.Services.AddScoped<ICreateSingleService<DeliveryBox>, CreateService<DeliveryBox>>();
+builder.Services.AddScoped<IReadSingleSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
+builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
+#endregion
+
+#region DeliveryBoxItem
+builder.Services.AddScoped<ICreateSingleService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
+builder.Services.AddScoped<ICreateRangeService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
+builder.Services.AddScoped<IDeleteService<DeliveryBoxItem>, DeleteService<DeliveryBoxItem>>();
 #endregion
 
 #endregion
@@ -414,7 +435,7 @@ builder
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
-            new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         );
         options.JsonSerializerOptions.RespectNullableAnnotations = true;
     });

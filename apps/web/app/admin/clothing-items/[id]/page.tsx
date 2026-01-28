@@ -33,7 +33,7 @@ import { useQueryClient } from "@tanstack/react-query";
 export default function ClothingItemPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const originalItem = useQuery(api, "/clothing-items/{id}", {
+  const originalItem = useQuery(api, "/clothing-items/{id}/admin", {
     queryKey: ["admin-clothing-item", id],
     parameters: {
       id: id as string,

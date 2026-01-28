@@ -83,11 +83,11 @@ export function SetupForm({
               label: x,
             })),
             ...step3Data.bottomWaistSizes.map((x) => ({
-              sizeType: "bottom_waist" as const,
+              sizeType: "bottomWaist" as const,
               label: x,
             })),
             ...step3Data.bottomLengthSizes.map((x) => ({
-              sizeType: "bottom_length" as const,
+              sizeType: "bottomLength" as const,
               label: x,
             })),
             ...step3Data.shoeSize.map((x) => ({

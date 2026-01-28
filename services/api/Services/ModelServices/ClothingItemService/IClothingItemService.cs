@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Request.ClothingItem;
 using ReWear.Dtos.Response.ClothingItem;
@@ -15,6 +16,12 @@ public interface IClothingItemService
     Task<Result<IEnumerable<AdminClothingItemResponseDto>>> GetAll(
         CancellationToken cancellationToken
     );
+    Task<Result<IEnumerable<ClothingItemPreviewResponseDto>>> GetPreviews(
+        ClaimsPrincipal userClaims,
+        GetClothingItemFiltersRequestDto filters,
+        CancellationToken ct
+    );
+    Task<Result<FullClothingItemResponseDto>> GetFullById(Guid id, CancellationToken ct);
 
     Task<Result> Update(UpdateClothingItemRequestDto request);
     Task<Result> UpdateImage(Guid id, IFormFile imageStream);

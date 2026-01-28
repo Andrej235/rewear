@@ -1,4 +1,4 @@
-import { LoginForm } from "@repo/ui/login-form";
+import { LoginForm } from "@repo/ui/auth/login-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { JSX } from "react";
 import { useNavigate } from "react-router";

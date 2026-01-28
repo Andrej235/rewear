@@ -6,7 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { Mail } from "lucide-react";
 import { useRef, useState } from "react";
-import { Button } from "./common/button";
+import { Button } from "../common/button";
 import {
   Card,
   CardContent,
@@ -14,14 +14,14 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "./common/card";
+} from "../common/card";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "./common/input-otp";
-import { CountdownTimer } from "./countdown-timer";
+} from "../common/input-otp";
+import { CountdownTimer } from "../countdown-timer";
 
 export function EmailVerification({
   api,

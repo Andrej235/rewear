@@ -1,0 +1,29 @@
+"use client";
+import { Button } from "@repo/ui/common/button";
+import { api } from "../lib/api.client";
+import { useRouter } from "next/navigation";
+
+export function NewBoxButton() {
+  const router = useRouter();
+
+  async function handleCreate() {
+    const { data } = await api.sendRequest(
+      "/delivery-boxes",
+      {
+        method: "post",
+      },
+      {
+        toasts: {
+          success: "New box created successfully!",
+          loading: "Creating new box...",
+          error: (e) => e.message || "Failed to create a new box.",
+        },
+      },
+    );
+
+    if (!data) return;
+    router.push(`/boxes/${data.id}`);
+  }
+
+  return <Button onClick={handleCreate}>Create New Box</Button>;
+}

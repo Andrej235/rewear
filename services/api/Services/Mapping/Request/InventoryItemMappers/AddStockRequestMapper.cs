@@ -17,10 +17,10 @@ public class AddStockRequestMapper : IRequestMapper<AddStockRequestDto, IEnumera
                 ClothingItemId = source.ClothingItemId,
 
                 Category = source.Category,
-                TopSize = source.TopSize,
-                BottomWaistSize = source.BottomWaistSize,
-                BottomLengthSize = source.BottomLengthSize,
-                ShoeSize = source.ShoeSize,
+                TopSize = source.TopSize?.ToUpper(),
+                BottomWaistSize = source.BottomWaistSize?.ToUpper(),
+                BottomLengthSize = source.BottomLengthSize?.ToUpper(),
+                ShoeSize = source.ShoeSize?.ToUpper(),
 
                 Condition = InventoryItemCondition.New,
                 Status = InventoryItemStatus.Available,

@@ -1,4 +1,4 @@
-import { SignupForm } from "@repo/ui/signup-form";
+import { SignupForm } from "@repo/ui/auth/signup-form";
 import { JSX } from "react";
 import { api } from "../../lib/api";
 import { Link } from "../link";

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ReWear.Dtos.Response.User;
+using ReWear.Models.Enums;
 using ReWear.Utilities;
 
 namespace ReWear.Controllers.UserController;
@@ -35,6 +36,23 @@ public partial class UserController
             return Unauthorized(user.Errors[0].Message);
 
         return Ok(user.Value);
+    }
+
+    [Authorize]
+    [HttpGet("me/sizes")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<IEnumerable<UserSizeResponseDto>>> GetCurrentUserSizes(
+        [FromQuery] IEnumerable<SizeType> sizeTypes,
+        CancellationToken cancellationToken
+    )
+    {
+        var sizes = await userService.GetUserSizes(User, sizeTypes, cancellationToken);
+
+        if (sizes.IsFailed)
+            return Unauthorized(sizes.Errors[0].Message);
+
+        return Ok(sizes.Value);
     }
 
     [Authorize(Roles = Roles.Admin)]

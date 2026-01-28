@@ -22,6 +22,7 @@ public partial class UserService(
     ICreateSingleService<UserSubscription> userSubscriptionCreateService,
     IReadSingleService<RefreshToken> tokenReadService,
     IReadSingleSelectedService<User> userReadService,
+    IReadRangeSelectedService<UserSize> sizeReadService,
     IExecuteUpdateService<User> updateService,
     IDeleteService<User> deleteService,
     IDeleteService<RefreshToken> tokenDeleteService,

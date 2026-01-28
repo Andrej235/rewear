@@ -138,6 +138,24 @@ namespace ReWear.Services.Read
                     ?? throw new InvalidOperationException()
             );
 
+        public static IWrappedOrderedQueryable<TSource> ThenBy<TSource, TKey>(
+            this IWrappedOrderedQueryable<TSource> source,
+            Expression<Func<TSource, TKey>> keySelector
+        ) =>
+            new WrappedOrderedQueryable<TSource>(
+                (source as WrappedOrderedQueryable<TSource>)?.Source?.ThenBy(keySelector)
+                    ?? throw new InvalidOperationException()
+            );
+
+        public static IWrappedOrderedQueryable<TSource> ThenByDescending<TSource, TKey>(
+            this IWrappedOrderedQueryable<TSource> source,
+            Expression<Func<TSource, TKey>> keySelector
+        ) =>
+            new WrappedOrderedQueryable<TSource>(
+                (source as WrappedOrderedQueryable<TSource>)?.Source?.ThenByDescending(keySelector)
+                    ?? throw new InvalidOperationException()
+            );
+
         public static IWrappedQueryable<TEntity> AsNoTracking<TEntity>(
             this IWrappedQueryable<TEntity> source
         )

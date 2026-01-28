@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Request.User;
 using ReWear.Dtos.Response.User;
+using ReWear.Models.Enums;
 
 namespace ReWear.Services.ModelServices.UserService;
 
@@ -28,6 +29,11 @@ public interface IUserService
     Task<Result<UserResponseDto>> Get(ClaimsPrincipal claim, CancellationToken cancellationToken);
     Task<Result<FullUserResponseDto>> GetFull(
         ClaimsPrincipal claim,
+        CancellationToken cancellationToken
+    );
+    Task<Result<IEnumerable<UserSizeResponseDto>>> GetUserSizes(
+        ClaimsPrincipal claim,
+        IEnumerable<SizeType> sizeTypes,
         CancellationToken cancellationToken
     );
 

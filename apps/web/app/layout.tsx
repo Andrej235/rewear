@@ -20,7 +20,10 @@ const robotoSlab = Roboto_Slab({
 });
 
 export const metadata: Metadata = {
-  title: "My Website",
+  title: {
+    absolute: "Your Wardrobe, On Demand - ReWear",
+    template: "%s | ReWear",
+  },
   description: "",
 };
 

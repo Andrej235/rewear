@@ -1,4 +1,4 @@
-import { ResetPassword } from "@repo/ui/reset-password";
+import { ResetPassword } from "@repo/ui/auth/reset-password";
 import { useNavigate, useSearchParams } from "react-router";
 import { api } from "../../lib/api";
 
