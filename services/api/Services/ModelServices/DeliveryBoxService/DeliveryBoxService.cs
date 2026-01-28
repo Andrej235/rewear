@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using ReWear.Models;
 using ReWear.Services.Create;
+using ReWear.Services.Delete;
 using ReWear.Services.Read;
 using ReWear.Services.Update;
 
@@ -13,5 +14,6 @@ public partial class DeliveryBoxService(
     IReadSingleSelectedService<DeliveryBox> readService,
     IReadRangeSelectedService<DeliveryBox> readRangeService,
     IReadRangeSelectedService<InventoryItem> inventoryItemReadService,
-    IExecuteUpdateService<InventoryItem> inventoryItemUpdateService
+    IExecuteUpdateService<InventoryItem> inventoryItemUpdateService,
+    IDeleteService<DeliveryBoxItem> deleteItemService
 ) : IDeliveryBoxService;

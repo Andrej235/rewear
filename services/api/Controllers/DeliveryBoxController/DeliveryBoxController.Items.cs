@@ -10,13 +10,21 @@ public partial class DeliveryBoxController
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> AddItemToLatestBox(
-        Guid clothingItemId,
-        [FromQuery] string size,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> AddItemToLatestBox(Guid clothingItemId, [FromQuery] string size)
     {
-        var result = await service.AddItemToLatestBox(User, clothingItemId, size, ct);
+        var result = await service.AddItemToLatestBox(User, clothingItemId, size);
+
+        if (result.IsFailed)
+            return BadRequest(result.Errors);
+
+        return Ok();
+    }
+
+    [Authorize]
+    [HttpDelete("latest/remove-item/{inventoryItemId:guid}")]
+    public async Task<ActionResult> RemoveItemFromLatestBox(Guid inventoryItemId)
+    {
+        var result = await service.RemoveItem(User, inventoryItemId);
 
         if (result.IsFailed)
             return BadRequest(result.Errors);

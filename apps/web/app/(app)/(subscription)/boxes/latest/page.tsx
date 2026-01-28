@@ -19,13 +19,21 @@ import {
   PageTitle,
 } from "@repo/ui/common/page-card";
 import { LoadingScreen } from "@repo/ui/loading-screen";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "../../../../../lib/api.client";
 import { pagePaddingX } from "../../../../../lib/page-padding";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@repo/ui/common/context-menu";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function LatestBoxPage() {
+  const queryClient = useQueryClient();
   const latestBoxQuery = useQuery(api, "/delivery-boxes/latest", {
     queryKey: ["latest-box"],
   });
@@ -42,6 +50,42 @@ export default function LatestBoxPage() {
       default:
         return "N/A";
     }
+  }
+
+  async function handleRemove(inventoryItemId: string) {
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/latest/remove-item/{inventoryItemId}",
+      {
+        method: "delete",
+        parameters: {
+          inventoryItemId,
+        },
+      },
+      {
+        toasts: {
+          success: "Item removed from your latest box.",
+          loading: "Removing item from your latest box...",
+          error: (e) =>
+            e.message || "Failed to remove item from your latest box.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    queryClient.setQueryData(
+      ["latest-box"],
+      (oldData: Schema<"FullDeliveryBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          items: oldData.items.filter(
+            (item) => item.inventoryItem.id !== inventoryItemId,
+          ),
+        };
+      },
+    );
   }
 
   if (latestBoxQuery.isLoading) return <LoadingScreen />;
@@ -75,37 +119,52 @@ export default function LatestBoxPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
           {latestBox?.items.map(
             ({ clothingItem: item, chosenByAi, inventoryItem: invItem }) => (
-              <Link key={item.id} href={`/${item.id}`} className="max-w-full">
-                <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
-                  <div className="relative aspect-2/1 w-full lg:h-64">
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.name}
-                      fill
-                      className="h-64 w-full min-w-0 rounded object-cover"
-                    />
-                  </div>
+              <ContextMenu key={item.id}>
+                <ContextMenuTrigger asChild>
+                  <Link href={`/${item.id}`} className="max-w-full">
+                    <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
+                      <div className="relative aspect-2/1 w-full lg:h-64">
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.name}
+                          fill
+                          className="h-64 w-full min-w-0 rounded object-cover"
+                        />
+                      </div>
 
-                  <CardHeader>
-                    <CardTitle>
-                      <span>{item.name}</span>
-                      {chosenByAi && <Badge className="ml-2">AI</Badge>}
-                    </CardTitle>
+                      <CardHeader>
+                        <CardTitle>
+                          <span>{item.name}</span>
+                          {chosenByAi && <Badge className="ml-2">AI</Badge>}
+                        </CardTitle>
 
-                    <CardDescription className="flex min-w-0 items-center">
-                      {item.description.length > 200
-                        ? item.description.slice(0, 200) + "..."
-                        : item.description || "No description"}
-                    </CardDescription>
-                  </CardHeader>
+                        <CardDescription className="flex min-w-0 items-center">
+                          {item.description.length > 200
+                            ? item.description.slice(0, 200) + "..."
+                            : item.description || "No description"}
+                        </CardDescription>
+                      </CardHeader>
 
-                  <CardFooter className="justify-end">
-                    <p className="text-sm text-muted-foreground">
-                      {renderSize(invItem)}
-                    </p>
-                  </CardFooter>
-                </Card>
-              </Link>
+                      <CardFooter className="justify-end">
+                        <p className="text-sm text-muted-foreground">
+                          {renderSize(invItem)}
+                        </p>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                </ContextMenuTrigger>
+
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                    onClick={() => handleRemove(invItem.id)}
+                  >
+                    <span>Remove</span>
+                    <Trash2 />
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             ),
           )}
         </div>

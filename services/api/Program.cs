@@ -420,6 +420,7 @@ builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<D
 
 #region DeliveryBoxItem
 builder.Services.AddScoped<ICreateSingleService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
+builder.Services.AddScoped<IDeleteService<DeliveryBoxItem>, DeleteService<DeliveryBoxItem>>();
 #endregion
 
 #endregion

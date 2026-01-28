@@ -17,10 +17,6 @@ public interface IDeliveryBoxService
         CancellationToken ct
     );
 
-    Task<Result> AddItemToLatestBox(
-        ClaimsPrincipal claims,
-        Guid clothingItemId,
-        string size,
-        CancellationToken ct
-    );
+    Task<Result> AddItemToLatestBox(ClaimsPrincipal claims, Guid clothingItemId, string size);
+    Task<Result> RemoveItem(ClaimsPrincipal claims, Guid inventoryItemId);
 }

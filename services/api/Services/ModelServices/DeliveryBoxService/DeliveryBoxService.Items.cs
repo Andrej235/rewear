@@ -11,8 +11,7 @@ public partial class DeliveryBoxService
     public async Task<Result> AddItemToLatestBox(
         ClaimsPrincipal claims,
         Guid clothingItemId,
-        string size,
-        CancellationToken ct
+        string size
     )
     {
         var userId = userManager.GetUserId(claims);
@@ -24,8 +23,7 @@ public partial class DeliveryBoxService
             x => x.UserId == userId,
             0,
             1,
-            q => q.OrderByDescending(b => b.Month),
-            ct
+            q => q.OrderByDescending(b => b.Month)
         );
 
         if (latestBoxResult.IsFailed || !latestBoxResult.Value.Any())
@@ -80,6 +78,41 @@ public partial class DeliveryBoxService
         await inventoryItemUpdateService.Update(
             x => x.Id == inventoryItem.Id,
             x => x.SetProperty(x => x.Status, InventoryItemStatus.Reserved)
+        );
+
+        return Result.Ok();
+    }
+
+    public async Task<Result> RemoveItem(ClaimsPrincipal claims, Guid inventoryItemId)
+    {
+        var userId = userManager.GetUserId(claims);
+        if (userId is null)
+            return Result.Fail("User not found");
+
+        // even though we have the inventoryItemId, we still need to find the latest box for the user to protect against deleting from other boxes
+        var latestBoxResult = await readRangeService.Get(
+            x => new { x.Id, x.Status },
+            x => x.UserId == userId,
+            0,
+            1,
+            q => q.OrderByDescending(b => b.Month)
+        );
+
+        if (latestBoxResult.IsFailed || !latestBoxResult.Value.Any())
+            return Result.Fail("No delivery boxes found");
+
+        var latestBox = latestBoxResult.Value.First();
+
+        var itemDeleteResult = await deleteItemService.Delete(x =>
+            x.DeliveryBoxId == latestBox.Id && x.InventoryItemId == inventoryItemId
+        );
+
+        if (itemDeleteResult.IsFailed)
+            return Result.Fail(itemDeleteResult.Errors);
+
+        await inventoryItemUpdateService.Update(
+            x => x.Id == inventoryItemId,
+            x => x.SetProperty(x => x.Status, InventoryItemStatus.Available)
         );
 
         return Result.Ok();
