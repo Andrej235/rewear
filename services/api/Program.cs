@@ -82,7 +82,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(
-        new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)
+        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
     );
     options.SerializerOptions.RespectNullableAnnotations = true;
 });
@@ -312,6 +312,7 @@ builder.Services.AddScoped<IDeleteService<User>, DeleteService<User>>();
 
 builder.Services.AddScoped<ICreateRangeService<UserSize>, CreateService<UserSize>>();
 builder.Services.AddScoped<IReadRangeService<UserSize>, ReadService<UserSize>>();
+builder.Services.AddScoped<IReadRangeSelectedService<UserSize>, ReadService<UserSize>>();
 builder.Services.AddScoped<
     ICreateSingleService<UserSubscription>,
     CreateService<UserSubscription>
@@ -415,7 +416,7 @@ builder
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(
-            new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseLower)
+            new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         );
         options.JsonSerializerOptions.RespectNullableAnnotations = true;
     });

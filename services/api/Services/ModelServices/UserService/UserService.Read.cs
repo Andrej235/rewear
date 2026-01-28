@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Response.User;
 using ReWear.Errors;
+using ReWear.Models.Enums;
 using ReWear.Services.Read;
 using ReWear.Utilities;
 
@@ -114,5 +115,29 @@ public partial class UserService
             logger.LogError(ex, "Failed to get all users");
             return Result.Fail(new BadRequest("Failed to get all users"));
         }
+    }
+
+    public Task<Result<IEnumerable<UserSizeResponseDto>>> GetUserSizes(
+        ClaimsPrincipal claim,
+        IEnumerable<SizeType> sizeTypes,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = userManager.GetUserId(claim);
+        if (userId is null)
+            return Task.FromResult(
+                Result.Fail<IEnumerable<UserSizeResponseDto>>(new NotFound("User not found"))
+            );
+
+        return sizeReadService.Get(
+            x => new UserSizeResponseDto
+            {
+                Id = x.Id,
+                Label = x.Label,
+                SizeType = x.SizeType,
+            },
+            x => x.UserId == userId && sizeTypes.Contains(x.SizeType),
+            cancellationToken: cancellationToken
+        );
     }
 }

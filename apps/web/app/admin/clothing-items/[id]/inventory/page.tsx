@@ -83,14 +83,14 @@ import { baseUrl } from "../../../../../lib/base-url";
 const statuses: Schema<"InventoryItemStatus">[] = [
   "available",
   "reserved",
-  "in_cleaning",
+  "inCleaning",
   "retired",
 ];
 
 const conditions: Schema<"InventoryItemCondition">[] = [
   "new",
-  "like_new",
-  "very_good",
+  "likeNew",
+  "veryGood",
   "good",
   "acceptable",
   "poor",

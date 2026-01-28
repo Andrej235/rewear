@@ -1,7 +1,5 @@
-// TODO: add size selection and auto select what fits the user
 import { cn } from "@repo/lib/cn";
 import { toTitleCase } from "@repo/lib/utils/title-case";
-import { Button } from "@repo/ui/common/button";
 import {
   Table,
   TableBody,
@@ -10,12 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/ui/common/table";
-import { ToggleGroup, ToggleGroupItem } from "@repo/ui/common/toggle-group";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { SizeSelector } from "../../../../components/size-selector";
 import { getClothingItem } from "../../../../lib/get-clothing-item";
 import { pagePaddingX } from "../../../../lib/page-padding";
-import { Separator } from "@repo/ui/common/separator";
 
 export async function generateMetadata({
   params,
@@ -127,32 +124,10 @@ export default async function FullClothingItemPage({
         </Table>
 
         {/* Sizes */}
-        <div className="mt-8 flex flex-col items-center gap-4">
-          <Separator className="max-w-2/5" />
-
-          {clothingItem.sizes.length > 0 && (
-            <ToggleGroup
-              type="single"
-              className="mt-4"
-              spacing={2}
-              variant="outline"
-            >
-              {clothingItem.sizes.map((size) => (
-                <ToggleGroupItem key={size} value={size} className="px-4 py-2">
-                  {size}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          )}
-
-          <Button
-            disabled={clothingItem.sizes.length === 0}
-            size="lg"
-            className="w-full max-w-96"
-          >
-            Add to Box
-          </Button>
-        </div>
+        <SizeSelector
+          availableSizes={clothingItem.sizes}
+          clothingCategory={clothingItem.category}
+        />
       </div>
     </div>
   );
