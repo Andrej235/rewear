@@ -1,11 +1,21 @@
-// TODO: add size selection, auto select what fits the user, display brand, and redesign the page to look better
+// TODO: add size selection and auto select what fits the user
 import { cn } from "@repo/lib/cn";
+import { toTitleCase } from "@repo/lib/utils/title-case";
 import { Button } from "@repo/ui/common/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/ui/common/table";
 import { ToggleGroup, ToggleGroupItem } from "@repo/ui/common/toggle-group";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getClothingItem } from "../../../../lib/get-clothing-item";
 import { pagePaddingX } from "../../../../lib/page-padding";
+import { Separator } from "@repo/ui/common/separator";
 
 export async function generateMetadata({
   params,
@@ -31,8 +41,10 @@ export default async function FullClothingItemPage({
   if (!clothingItem) return notFound();
 
   return (
-    <div className={cn(pagePaddingX, "grid grid-cols-[auto_1fr] gap-12 py-8")}>
-      <div className="flex flex-col gap-2">
+    <div
+      className={cn(pagePaddingX, "grid gap-12 py-8 lg:grid-cols-[auto_1fr]")}
+    >
+      <div className="mx-auto aspect-square max-w-[80vw] lg:mx-0 lg:size-auto">
         <Image
           src={clothingItem.imageUrl}
           alt={clothingItem.name}
@@ -46,68 +58,119 @@ export default async function FullClothingItemPage({
         <h1 className="text-lg font-semibold">{clothingItem.name}</h1>
         <p className="text-muted-foreground">{clothingItem.description}</p>
 
-        <div className="mt-4 flex flex-col gap-1">
-          <h2 className="font-medium">Details</h2>
-          <p className="capitalize">
-            <span className="font-semibold">Category:</span>{" "}
-            {clothingItem.category}
-          </p>
-          <p className="capitalize">
-            <span className="font-semibold">Gender Target:</span>{" "}
-            {clothingItem.genderTarget}
-          </p>
-          <p className="capitalize">
-            <span className="font-semibold">Colors:</span>{" "}
-            {clothingItem.colors.filter((x) => x !== "none").join(", ")}
-          </p>
-          <p className="capitalize">
-            <span className="font-semibold">Style:</span>{" "}
-            <span className="capitalize">{clothingItem.primaryStyle}</span>
-            {clothingItem.secondaryStyles.filter((x) => x !== "none").length >
-              0 && (
-              <>
-                {" "}
-                with elements of{" "}
-                <span className="capitalize">
-                  {clothingItem.secondaryStyles
-                    .filter((x) => x !== "none")
-                    .join(", ")}
-                </span>
-              </>
-            )}
-          </p>
-          <p className="capitalize">
-            <span className="font-semibold">Fit Types:</span>{" "}
-            {clothingItem.fitType}
-          </p>
-          <p className="capitalize">
-            <span className="font-semibold">Season:</span> {clothingItem.season}
-          </p>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead colSpan={2} className="w-40">
+                Details
+              </TableHead>
+            </TableRow>
+          </TableHeader>
 
-        {clothingItem.sizes.length > 0 && (
-          <ToggleGroup
-            type="single"
-            className="mt-4"
-            spacing={2}
-            variant="outline"
+          <TableBody>
+            <TableRow>
+              <TableCell className="w-1/2 md:w-1/3">Category</TableCell>
+              <TableCell className="capitalize">
+                {clothingItem.category}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Brand</TableCell>
+              <TableCell className="capitalize">
+                {clothingItem.brandName}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Primary Style</TableCell>
+              <TableCell className="capitalize">
+                {clothingItem.primaryStyle}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Secondary Styles</TableCell>
+              <TableCell>
+                {joinEnumWithCommasAndAnd(clothingItem.secondaryStyles)}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Colors</TableCell>
+              <TableCell>
+                {joinEnumWithCommasAndAnd(clothingItem.colors)}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Fit Type</TableCell>
+              <TableCell className="capitalize">
+                {clothingItem.fitType}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Season</TableCell>
+              <TableCell className="capitalize">
+                {clothingItem.season}
+              </TableCell>
+            </TableRow>
+
+            <TableRow>
+              <TableCell>Material</TableCell>
+              <TableCell className="capitalize">
+                {clothingItem.material}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+
+        {/* Sizes */}
+        <div className="mt-8 flex flex-col items-center gap-4">
+          <Separator className="max-w-2/5" />
+
+          {clothingItem.sizes.length > 0 && (
+            <ToggleGroup
+              type="single"
+              className="mt-4"
+              spacing={2}
+              variant="outline"
+            >
+              {clothingItem.sizes.map((size) => (
+                <ToggleGroupItem key={size} value={size} className="px-4 py-2">
+                  {size}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          )}
+
+          <Button
+            disabled={clothingItem.sizes.length === 0}
+            size="lg"
+            className="w-full max-w-96"
           >
-            {clothingItem.sizes.map((size) => (
-              <ToggleGroupItem key={size} value={size} className="px-4 py-2">
-                {size}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
-        )}
-
-        <Button
-          disabled={clothingItem.sizes.length === 0}
-          size="lg"
-          className="w-96"
-        >
-          Add to Box
-        </Button>
+            Add to Box
+          </Button>
+        </div>
       </div>
     </div>
   );
+}
+
+function joinEnumWithCommasAndAnd(items: string[]): string {
+  items = items
+    .filter((i) => i !== "none" && i.trim().length > 0)
+    .map((x) => {
+      let res = x.trim();
+      res = res.replace(/_/g, " ");
+      res = toTitleCase(res);
+
+      return res;
+    });
+
+  if (items.length === 0) return "";
+  if (items.length === 1) return items[0]!;
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return items.slice(0, -1).join(", ") + ", and " + items[items.length - 1];
 }
