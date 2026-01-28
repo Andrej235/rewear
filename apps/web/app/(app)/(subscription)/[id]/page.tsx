@@ -127,6 +127,7 @@ export default async function FullClothingItemPage({
         <SizeSelector
           availableSizes={clothingItem.sizes}
           clothingCategory={clothingItem.category}
+          clothingItemId={clothingItem.id}
         />
       </div>
     </div>

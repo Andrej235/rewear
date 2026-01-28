@@ -402,6 +402,7 @@ builder.Services.AddScoped<
 #region InventoryItem
 builder.Services.AddScoped<IInventoryItemService, InventoryItemService>();
 builder.Services.AddScoped<ICreateRangeService<InventoryItem>, CreateService<InventoryItem>>();
+builder.Services.AddScoped<IReadRangeSelectedService<InventoryItem>, ReadService<InventoryItem>>();
 builder.Services.AddScoped<IExecuteUpdateService<InventoryItem>, UpdateService<InventoryItem>>();
 builder.Services.AddScoped<IDeleteService<InventoryItem>, DeleteService<InventoryItem>>();
 builder.Services.AddScoped<
@@ -415,6 +416,10 @@ builder.Services.AddScoped<IDeliveryBoxService, DeliveryBoxService>();
 builder.Services.AddScoped<ICreateSingleService<DeliveryBox>, CreateService<DeliveryBox>>();
 builder.Services.AddScoped<IReadSingleSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
 builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
+#endregion
+
+#region DeliveryBoxItem
+builder.Services.AddScoped<ICreateSingleService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
 #endregion
 
 #endregion

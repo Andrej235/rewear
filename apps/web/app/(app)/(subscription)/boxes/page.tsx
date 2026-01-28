@@ -71,14 +71,14 @@ export default async function BoxesPage() {
           </TableHeader>
 
           <TableBody>
-            {boxes?.map((box) => (
+            {boxes?.map((box, i) => (
               <TableRow key={box.id}>
                 <TableCell>{format(box.month, "MMMM yyyy")}</TableCell>
                 <TableCell>{renderStatus(box.status)}</TableCell>
                 <TableCell>{box.itemCount}</TableCell>
                 <TableCell>
                   <Button asChild>
-                    <Link href={`/app/subscription/boxes/${box.id}`}>
+                    <Link href={i === 0 ? "/boxes/latest" : `/boxes/${box.id}`}>
                       View Details
                     </Link>
                   </Button>

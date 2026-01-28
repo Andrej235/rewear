@@ -8,5 +8,19 @@ public interface IDeliveryBoxService
 {
     Task<Result<DeliveryBoxPreviewResponseDto>> Create(ClaimsPrincipal claims);
 
-    Task<Result<IEnumerable<DeliveryBoxPreviewResponseDto>>> GetPreviews(ClaimsPrincipal claims);
+    Task<Result<IEnumerable<DeliveryBoxPreviewResponseDto>>> GetPreviews(
+        ClaimsPrincipal claims,
+        CancellationToken ct
+    );
+    Task<Result<FullDeliveryBoxResponseDto>> GetLatest(
+        ClaimsPrincipal claims,
+        CancellationToken ct
+    );
+
+    Task<Result> AddItemToLatestBox(
+        ClaimsPrincipal claims,
+        Guid clothingItemId,
+        string size,
+        CancellationToken ct
+    );
 }

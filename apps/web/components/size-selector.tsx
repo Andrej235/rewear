@@ -4,19 +4,22 @@ import { useQuery } from "@repo/lib/api/use-query";
 import { Button } from "@repo/ui/common/button";
 import { Separator } from "@repo/ui/common/separator";
 import { ToggleGroup, ToggleGroupItem } from "@repo/ui/common/toggle-group";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api.client";
 
 type Props = {
   availableSizes: string[];
   clothingCategory: Schema<"ClothingCategory">;
+  clothingItemId: string;
 };
 
 export function SizeSelector({
   availableSizes: sizes,
   clothingCategory,
+  clothingItemId,
 }: Props) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const waitingForResponse = useRef(false);
 
   const sizeTypes = useMemo<Schema<"SizeType">[]>(() => {
     switch (clothingCategory) {
@@ -87,6 +90,31 @@ export function SizeSelector({
     }
   }, [userSizes.data, clothingCategory, sizes]);
 
+  async function handleAdd() {
+    if (waitingForResponse.current || !selectedSize) return;
+    waitingForResponse.current = true;
+
+    await api.sendRequest(
+      "/delivery-boxes/latest/add-item/{clothingItemId}",
+      {
+        method: "post",
+        parameters: {
+          clothingItemId,
+          size: selectedSize,
+        },
+      },
+      {
+        toasts: {
+          success: "Item added to your latest box!",
+          loading: "Adding item to your latest box...",
+          error: (e) => e.message || "Failed to add item to your latest box.",
+        },
+      },
+    );
+
+    waitingForResponse.current = false;
+  }
+
   return (
     <div className="mt-8 flex flex-col items-center gap-4">
       <Separator className="max-w-2/5" />
@@ -112,6 +140,7 @@ export function SizeSelector({
         disabled={sizes.length === 0 || !selectedSize}
         size="lg"
         className="w-full max-w-96"
+        onClick={handleAdd}
       >
         Add to Box
       </Button>
