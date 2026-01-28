@@ -12,14 +12,15 @@ namespace ReWear.Services.ModelServices.UserStyleEmbeddingService;
 
 public class UserStyleEmbeddingService(
     GeminiEmbeddingService geminiEmbeddingService,
-    IReadSingleService<User> clothingItemReadService,
+    IReadSingleService<User> userReadService,
+    IReadSingleSelectedService<UserStyleEmbedding> userStyleEmbeddingReadService,
     ICreateSingleService<UserStyleEmbedding> createService,
     IExecuteUpdateService<UserStyleEmbedding> updateService
 ) : IUserStyleEmbeddingService
 {
-    public async Task<Result> GenerateEmbedding(string id)
+    public async Task<Result<Vector>> GenerateEmbedding(string id)
     {
-        var itemResult = await clothingItemReadService.Get(x => x.Id == id);
+        var itemResult = await userReadService.Get(x => x.Id == id);
         if (itemResult.IsFailed)
             return Result.Fail(itemResult.Errors);
 
@@ -112,7 +113,20 @@ public class UserStyleEmbeddingService(
                 return Result.Fail(createResult.Errors);
         }
 
-        return Result.Ok();
+        return vector;
+    }
+
+    public async Task<Result<Vector>> GetOrGenerateEmbedding(string id)
+    {
+        var readResult = await userStyleEmbeddingReadService.Get(
+            x => new { x.Embedding },
+            x => x.UserId == id
+        );
+
+        if (readResult.IsSuccess)
+            return readResult.Value.Embedding;
+
+        return await GenerateEmbedding(id);
     }
 
     void NormalizeInPlace(float[] v)

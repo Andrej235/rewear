@@ -88,6 +88,28 @@ export default function LatestBoxPage() {
     );
   }
 
+  async function handleFillWithAI() {
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/latest/fill-with-ai",
+      {
+        method: "post",
+      },
+      {
+        toasts: {
+          success: "Your latest box has been filled with AI-selected items.",
+          loading: "Filling your latest box with AI-selected items...",
+          error: (e) =>
+            e.message ||
+            "Failed to fill your latest box with AI-selected items.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    latestBoxQuery.refetch();
+  }
+
   if (latestBoxQuery.isLoading) return <LoadingScreen />;
 
   const latestBox = latestBoxQuery.data;
@@ -101,7 +123,7 @@ export default function LatestBoxPage() {
         </PageDescription>
 
         <PageAction>
-          <Button>
+          <Button onClick={handleFillWithAI}>
             <span>Fill With AI</span>
             <Sparkles className="ml-2" />
           </Button>

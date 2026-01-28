@@ -327,6 +327,10 @@ builder.Services.AddScoped<
     CreateService<UserStyleEmbedding>
 >();
 builder.Services.AddScoped<
+    IReadSingleSelectedService<UserStyleEmbedding>,
+    ReadService<UserStyleEmbedding>
+>();
+builder.Services.AddScoped<
     IExecuteUpdateService<UserStyleEmbedding>,
     UpdateService<UserStyleEmbedding>
 >();
@@ -420,6 +424,7 @@ builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<D
 
 #region DeliveryBoxItem
 builder.Services.AddScoped<ICreateSingleService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
+builder.Services.AddScoped<ICreateRangeService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
 builder.Services.AddScoped<IDeleteService<DeliveryBoxItem>, DeleteService<DeliveryBoxItem>>();
 #endregion
 
