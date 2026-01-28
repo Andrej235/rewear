@@ -65,7 +65,12 @@ public partial class ClothingItemService
 
         return ci =>
             // Name match (bonus, not required)
-            (filters.Name != null && ci.Name.Contains(filters.Name) ? 35 : 0)
+            (filters.Name != null && ci.Name.ToLower().Contains(filters.Name.ToLower()) ? 35 : 0)
+            + (
+                filters.Name != null && ci.Description.ToLower().Contains(filters.Name.ToLower())
+                    ? 10
+                    : 0
+            )
             // Strong style match
             + (stylesMask != 0 && (ci.PrimaryStyle & stylesMask) != 0 ? 40 : 0)
             // Secondary style match (flags)
@@ -200,7 +205,7 @@ public partial class ClothingItemService
             // Category
             && (filters.Categories == null || (ci.Category & filters.Categories.FromFlags()) != 0)
             // Name
-            && (filters.Name == null || ci.Name.Contains(filters.Name))
+            && (filters.Name == null || ci.Name.ToLower().Contains(filters.Name.ToLower()))
             // Style
             && (
                 stylesMask == 0

@@ -190,6 +190,14 @@ export default function Home(): JSX.Element {
 
       {/* Previews */}
       <div className="grid w-full content-start gap-4 sm:grid-cols-2 sm:gap-2 md:grid-cols-1 md:gap-4 lg:grid-cols-2 3xl:grid-cols-3">
+        {previews.data?.length === 0 && (
+          <div className="col-span-3 mt-8">
+            <p className="col-span-full text-center text-sm text-muted-foreground">
+              No clothing items found matching the selected filters.
+            </p>
+          </div>
+        )}
+
         {previews.data?.map((item) => (
           <Link key={item.id} href={item.id} className="max-w-full">
             <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">

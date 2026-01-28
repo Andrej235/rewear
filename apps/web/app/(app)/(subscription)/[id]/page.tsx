@@ -7,8 +7,13 @@ import { notFound } from "next/navigation";
 import { getClothingItem } from "../../../../lib/get-clothing-item";
 import { pagePaddingX } from "../../../../lib/page-padding";
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  const clothingItem = await getClothingItem(params.id);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const id = (await params).id;
+  const clothingItem = await getClothingItem(id);
 
   return {
     title: clothingItem?.name ?? "Not Found",
