@@ -109,7 +109,7 @@ export function SizeSelector({
       )}
 
       <Button
-        disabled={sizes.length === 0}
+        disabled={sizes.length === 0 || !selectedSize}
         size="lg"
         className="w-full max-w-96"
       >

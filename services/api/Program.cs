@@ -30,6 +30,7 @@ using ReWear.Services.Mapping.Request.InventoryItemMappers;
 using ReWear.Services.Mapping.Request.SubscriptionPlanMappers;
 using ReWear.Services.ModelServices.ClothingItemEmbeddingService;
 using ReWear.Services.ModelServices.ClothingItemService;
+using ReWear.Services.ModelServices.DeliveryBoxService;
 using ReWear.Services.ModelServices.InventoryItemService;
 using ReWear.Services.ModelServices.SubscriptionPlanService;
 using ReWear.Services.ModelServices.TokenService;
@@ -407,6 +408,13 @@ builder.Services.AddScoped<
     IRequestMapper<AddStockRequestDto, IEnumerable<InventoryItem>>,
     AddStockRequestMapper
 >();
+#endregion
+
+#region DeliveryBox
+builder.Services.AddScoped<IDeliveryBoxService, DeliveryBoxService>();
+builder.Services.AddScoped<ICreateSingleService<DeliveryBox>, CreateService<DeliveryBox>>();
+builder.Services.AddScoped<IReadSingleSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
+builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
 #endregion
 
 #endregion
