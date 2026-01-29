@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Response.ClothingItem;
 using ReWear.Dtos.Response.DeliveryBox;
+using ReWear.Models.Enums;
 using ReWear.Services.Read;
 
 namespace ReWear.Services.ModelServices.DeliveryBoxService;
@@ -42,15 +43,15 @@ public partial class DeliveryBoxService
             return Result.Fail("User not found");
 
         var result = await readRangeService.Get(
-            x => new FullDeliveryBoxResponseDto
+            box => new FullDeliveryBoxResponseDto
             {
-                Id = x.Id,
-                Month = x.Month,
-                Status = x.Status,
-                CreatedAt = x.CreatedAt,
-                ReturnedAt = x.ReturnedAt,
-                SentAt = x.SentAt,
-                Items = x.Items.Select(i => new DeliveryBoxItemResponseDto
+                Id = box.Id,
+                Month = box.Month,
+                Status = box.Status,
+                CreatedAt = box.CreatedAt,
+                ReturnedAt = box.ReturnedAt,
+                SentAt = box.SentAt,
+                Items = box.Items.Select(i => new DeliveryBoxItemResponseDto
                 {
                     ChosenByAi = i.ChosenByAi,
                     InventoryItem = new InventoryItemResponseDto
@@ -69,6 +70,18 @@ public partial class DeliveryBoxService
                         Description = i.InventoryItem.ClothingItem.Description,
                         ImageUrl = i.InventoryItem.ClothingItem.ImageUrl,
                     },
+                    AvailableSizes = i
+                        .InventoryItem.ClothingItem.InInventory.Select(ii =>
+                            ii.Category == ClothingCategory.Top
+                            || ii.Category == ClothingCategory.Outerwear
+                                ? ii.TopSize!
+                            : ii.Category == ClothingCategory.Bottom
+                                ? ii.BottomWaistSize + " x " + ii.BottomLengthSize
+                            : ii.Category == ClothingCategory.Footwear ? ii.ShoeSize!
+                            : null!
+                        )
+                        .Where(size => size != null)
+                        .ToList(),
                 }),
             },
             x => x.UserId == userId,
@@ -81,6 +94,10 @@ public partial class DeliveryBoxService
         if (result.IsFailed || !result.Value.Any())
             return Result.Fail("No delivery boxes found");
 
-        return result.Value.First();
+        var box = result.Value.First();
+        foreach (var item in box.Items)
+            item.AvailableSizes = item.AvailableSizes.Distinct();
+
+        return box;
     }
 }

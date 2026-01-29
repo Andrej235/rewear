@@ -11,6 +11,12 @@ import {
   CardTitle,
 } from "@repo/ui/common/card";
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@repo/ui/common/context-menu";
+import {
   PageAction,
   PageCard,
   PageContent,
@@ -18,19 +24,20 @@ import {
   PageHeader,
   PageTitle,
 } from "@repo/ui/common/page-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/common/select";
 import { LoadingScreen } from "@repo/ui/loading-screen";
+import { useQueryClient } from "@tanstack/react-query";
 import { Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "../../../../../lib/api.client";
 import { pagePaddingX } from "../../../../../lib/page-padding";
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@repo/ui/common/context-menu";
-import { useQueryClient } from "@tanstack/react-query";
 
 export default function LatestBoxPage() {
   const queryClient = useQueryClient();
@@ -38,7 +45,7 @@ export default function LatestBoxPage() {
     queryKey: ["latest-box"],
   });
 
-  function renderSize(invItem: Schema<"InventoryItemResponseDto">) {
+  function getSizeString(invItem: Schema<"InventoryItemResponseDto">) {
     switch (invItem.category) {
       case "top":
       case "outerwear":
@@ -110,6 +117,70 @@ export default function LatestBoxPage() {
     latestBoxQuery.refetch();
   }
 
+  async function handleChangeSize(
+    item: Schema<"ClothingItemPreviewResponseDto">,
+    invItem: Schema<"InventoryItemResponseDto">,
+    newSize: string,
+  ) {
+    const { isOk, data } = await api.sendRequest(
+      "/delivery-boxes/latest/change-item-size",
+      {
+        method: "patch",
+        payload: {
+          inventoryItemId: invItem.id,
+          newSize,
+        },
+      },
+      {
+        toasts: {
+          success: "Item size updated successfully.",
+          loading: "Updating item size...",
+          error: (e) => e.message || "Failed to update item size.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    queryClient.setQueryData(
+      ["latest-box"],
+      (oldData: Schema<"FullDeliveryBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          items: oldData.items.map((boxItem) => {
+            if (boxItem.clothingItem.id !== item.id) return boxItem;
+
+            return {
+              ...boxItem,
+              inventoryItem: {
+                id: data!,
+                category: invItem.category,
+                // Update size fields based on category
+                topSize:
+                  invItem.category === "top" || invItem.category === "outerwear"
+                    ? newSize
+                    : boxItem.inventoryItem.topSize,
+                bottomWaistSize:
+                  invItem.category === "bottom"
+                    ? newSize.split(" x ")[0]
+                    : boxItem.inventoryItem.bottomWaistSize,
+                bottomLengthSize:
+                  invItem.category === "bottom"
+                    ? newSize.split(" x ")[1]
+                    : boxItem.inventoryItem.bottomLengthSize,
+                shoeSize:
+                  invItem.category === "footwear"
+                    ? newSize
+                    : boxItem.inventoryItem.shoeSize,
+              },
+            };
+          }),
+        };
+      },
+    );
+  }
+
   if (latestBoxQuery.isLoading) return <LoadingScreen />;
 
   const latestBox = latestBoxQuery.data;
@@ -140,54 +211,87 @@ export default function LatestBoxPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4">
           {latestBox?.items.map(
-            ({ clothingItem: item, chosenByAi, inventoryItem: invItem }) => (
-              <ContextMenu key={item.id}>
-                <ContextMenuTrigger asChild>
-                  <Link href={`/${item.id}`} className="max-w-full">
-                    <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
-                      <div className="relative aspect-2/1 w-full lg:h-64">
-                        <Image
-                          src={item.imageUrl}
-                          alt={item.name}
-                          fill
-                          className="h-64 w-full min-w-0 rounded object-cover"
-                        />
-                      </div>
+            ({
+              clothingItem: item,
+              chosenByAi,
+              inventoryItem: invItem,
+              availableSizes,
+            }) => {
+              const sizeStr = getSizeString(invItem);
 
-                      <CardHeader>
-                        <CardTitle>
-                          <span>{item.name}</span>
-                          {chosenByAi && <Badge className="ml-2">AI</Badge>}
-                        </CardTitle>
+              return (
+                <ContextMenu key={item.id}>
+                  <ContextMenuTrigger asChild>
+                    <Link href={`/${item.id}`} className="max-w-full">
+                      <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
+                        <div className="relative aspect-2/1 w-full lg:h-64">
+                          <Image
+                            src={item.imageUrl}
+                            alt={item.name}
+                            fill
+                            className="h-64 w-full min-w-0 rounded object-cover"
+                          />
+                        </div>
 
-                        <CardDescription className="flex min-w-0 items-center">
-                          {item.description.length > 200
-                            ? item.description.slice(0, 200) + "..."
-                            : item.description || "No description"}
-                        </CardDescription>
-                      </CardHeader>
+                        <CardHeader>
+                          <CardTitle>
+                            <span>{item.name}</span>
+                            {chosenByAi && <Badge className="ml-2">AI</Badge>}
+                          </CardTitle>
 
-                      <CardFooter className="justify-end">
-                        <p className="text-sm text-muted-foreground">
-                          {renderSize(invItem)}
-                        </p>
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                </ContextMenuTrigger>
+                          <CardDescription className="flex min-w-0 items-center">
+                            {item.description.length > 200
+                              ? item.description.slice(0, 200) + "..."
+                              : item.description || "No description"}
+                          </CardDescription>
+                        </CardHeader>
 
-                <ContextMenuContent>
-                  <ContextMenuItem
-                    variant="destructive"
-                    className="flex items-center gap-2"
-                    onClick={() => handleRemove(invItem.id)}
-                  >
-                    <span>Remove</span>
-                    <Trash2 />
-                  </ContextMenuItem>
-                </ContextMenuContent>
-              </ContextMenu>
-            ),
+                        <CardFooter className="justify-end">
+                          <p className="text-sm text-muted-foreground">
+                            <Select
+                              value={sizeStr}
+                              onValueChange={(newSize) =>
+                                handleChangeSize(item, invItem, newSize)
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+
+                              <SelectContent>
+                                {availableSizes.map((size) => (
+                                  <SelectItem
+                                    key={size}
+                                    value={size}
+                                    className="cursor-pointer"
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                    }}
+                                  >
+                                    {size}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </p>
+                        </CardFooter>
+                      </Card>
+                    </Link>
+                  </ContextMenuTrigger>
+
+                  <ContextMenuContent>
+                    <ContextMenuItem
+                      variant="destructive"
+                      className="flex items-center gap-2"
+                      onClick={() => handleRemove(invItem.id)}
+                    >
+                      <span>Remove</span>
+                      <Trash2 />
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+              );
+            },
           )}
         </div>
       </PageContent>

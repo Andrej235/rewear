@@ -19,6 +19,7 @@ public partial class DeliveryBoxService(
     IReadRangeSelectedService<DeliveryBox> readRangeService,
     IReadRangeSelectedService<InventoryItem> inventoryItemReadService,
     IReadRangeSelectedService<ClothingItem> clothingItemReadService,
+    IExecuteUpdateService<DeliveryBoxItem> deliveryBoxItemUpdateService,
     IExecuteUpdateService<InventoryItem> inventoryItemUpdateService,
     IDeleteService<DeliveryBoxItem> deleteItemService
 ) : IDeliveryBoxService;
