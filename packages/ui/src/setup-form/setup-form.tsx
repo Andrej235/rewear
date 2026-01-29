@@ -115,7 +115,7 @@ export function SetupForm({
   return (
     <Card
       className={cn(
-        "max-h-[70vh] w-full max-w-[90vw] sm:w-auto sm:min-w-lg",
+        "max-h-[70vh] w-full max-w-[90vw] sm:w-auto sm:min-w-lg lg:max-h-[80vh]",
         currentStep !== 4 && "lg:max-w-lg",
         className,
       )}
