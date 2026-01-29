@@ -22,7 +22,7 @@ const robotoSlab = Roboto_Slab({
 export const metadata: Metadata = {
   title: {
     absolute: "Your Wardrobe, On Demand - ReWear",
-    template: "%s | ReWear",
+    template: "%s - ReWear",
   },
   description: "",
 };

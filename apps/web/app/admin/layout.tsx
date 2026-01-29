@@ -6,6 +6,14 @@ import { AdminSidebar } from "../../components/admin/admin-sidebar";
 import { AppShell } from "../../components/app-shell";
 import { getApi } from "../../lib/api.server";
 import { getUser } from "../../lib/get-user";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Admin Panel",
+    template: "%s - ReWear Admin Panel",
+  },
+};
 
 export default async function RootAdminLayout({
   children,
