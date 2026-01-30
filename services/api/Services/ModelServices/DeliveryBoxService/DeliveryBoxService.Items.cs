@@ -20,7 +20,14 @@ public partial class DeliveryBoxService
             return Result.Fail("User not found");
 
         var latestBoxResult = await readRangeService.Get(
-            x => new { x.Id, x.Status },
+            x => new
+            {
+                x.Id,
+                x.Status,
+                ItemAlreadyInBox = x.Items.Any(i =>
+                    i.InventoryItem.ClothingItemId == clothingItemId
+                ),
+            },
             x => x.UserId == userId,
             0,
             1,
@@ -31,6 +38,12 @@ public partial class DeliveryBoxService
             return Result.Fail("No delivery boxes found");
 
         var latestBox = latestBoxResult.Value.First();
+
+        if (latestBox.Status != DeliveryBoxStatus.None)
+            return Result.Fail("Cannot add items to a box that has been processed");
+
+        if (latestBox.ItemAlreadyInBox)
+            return Result.Fail("Item is already in the latest box, cannot add duplicates");
 
         var inventoryItemResult = await inventoryItemReadService.Get(
             x => new { x.Id, x.Condition },
