@@ -39,6 +39,20 @@ import Link from "next/link";
 import { api } from "../../../../../lib/api.client";
 import { pagePaddingX } from "../../../../../lib/page-padding";
 import { cn } from "@repo/lib/cn";
+import { useRouter } from "next/navigation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/ui/common/alert-dialog";
+import { MouseEvent } from "react";
+import { toast } from "sonner";
 
 export default function LatestBoxPage() {
   const queryClient = useQueryClient();
@@ -182,7 +196,50 @@ export default function LatestBoxPage() {
     );
   }
 
-  async function handleSendBox() {}
+  const router = useRouter();
+  async function handleSendBox() {
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/send",
+      {
+        method: "post",
+      },
+      {
+        toasts: {
+          success: "Your latest box has been sent out!",
+          loading: "Sending out your latest box...",
+          error: (e) => e.message || "Failed to send out your latest box.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+    router.push("/boxes");
+  }
+
+  function validateBox(e: MouseEvent<HTMLButtonElement>) {
+    if (!latestBoxQuery.data) {
+      e.preventDefault();
+      return;
+    }
+
+    if (latestBoxQuery.data.items.length === 0) {
+      toast.error("Your box is empty. Please add items before sending.");
+
+      e.preventDefault();
+      return;
+    }
+
+    if (
+      latestBoxQuery.data.items.length > (latestBoxQuery.data.maxItemCount || 0)
+    ) {
+      toast.error(
+        `You have exceeded the maximum item count of ${latestBoxQuery.data.maxItemCount} defined in your subscription plan. Please remove some items before sending.`,
+      );
+
+      e.preventDefault();
+      return;
+    }
+  }
 
   if (latestBoxQuery.isLoading) return <LoadingScreen />;
 
@@ -206,10 +263,35 @@ export default function LatestBoxPage() {
         </PageDescription>
 
         <PageAction className="space-x-2">
-          <Button onClick={handleSendBox}>
-            <span>Send</span>
-            <Send className="ml-2" />
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button onClick={validateBox}>
+                <span>Send</span>
+                <Send className="ml-2" />
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to send out your latest box?
+                </AlertDialogTitle>
+
+                <AlertDialogDescription>
+                  Once sent, you will not be able to make further changes to it
+                  and the only way to cancel is to contact support.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+                <AlertDialogAction onClick={handleSendBox}>
+                  Send
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <Button onClick={handleFillWithAI}>
             <span>Fill With AI</span>

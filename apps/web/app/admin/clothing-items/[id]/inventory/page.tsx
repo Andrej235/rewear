@@ -530,11 +530,12 @@ export default function ClothingItemInventoryPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-1/3">Id</TableHead>
-              <TableHead className="w-1/6">Size</TableHead>
-              <TableHead className="w-1/6">Condition</TableHead>
-              <TableHead className="w-1/6">Status</TableHead>
-              <TableHead className="w-1/6 text-right">Actions</TableHead>
+              <TableHead className="w-1/4">Id</TableHead>
+              <TableHead className="w-1/4">Size</TableHead>
+              <TableHead className="w-1/8">Condition</TableHead>
+              <TableHead className="w-1/8">Status</TableHead>
+              <TableHead className="w-1/8">Times Rented</TableHead>
+              <TableHead className="w-1/8 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -618,6 +619,8 @@ export default function ClothingItemInventoryPage() {
                         </SelectContent>
                       </Select>
                     </TableCell>
+
+                    <TableCell>{item.timesRented}</TableCell>
 
                     <TableCell className="text-right">
                       <DropdownMenu>

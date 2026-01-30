@@ -25,4 +25,6 @@ public interface IDeliveryBoxService
     Task<Result<Guid>> ChangeItemSize(ClaimsPrincipal claims, ChangeBoxItemSizeRequestDto request);
 
     Task<Result> FillLatestBoxWithAI(ClaimsPrincipal claims);
+
+    Task<Result> Send(ClaimsPrincipal claims);
 }
