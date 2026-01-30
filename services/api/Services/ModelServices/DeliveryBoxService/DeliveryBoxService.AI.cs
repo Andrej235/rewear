@@ -41,7 +41,12 @@ public partial class DeliveryBoxService
             return Result.Fail("No delivery boxes found");
 
         var latestBox = latestBoxResult.Value.First();
-        var userSizes = userSizesResult?.Value ?? [];
+
+        if (latestBox.Status != DeliveryBoxStatus.None)
+            return Result.Fail("Cannot add items to a box that has been processed");
+
+        var existingItemIds = latestBox.Items;
+        var userSizes = userSizesResult.Value;
         var userEmbedding = userEmbeddingResult.Value;
 
         var topSizes = userSizes
@@ -99,6 +104,7 @@ public partial class DeliveryBoxService
                 && ci.InInventory.Any(ii =>
                     ii.Status == InventoryItemStatus.Available
                     && ii.Condition != InventoryItemCondition.Damaged
+                    && !existingItemIds.Any(id => id == ci.Id) // exclude items already in the box
                     && (
                         (
                             (

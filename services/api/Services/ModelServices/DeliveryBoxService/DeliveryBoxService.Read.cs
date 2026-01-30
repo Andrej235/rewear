@@ -71,7 +71,15 @@ public partial class DeliveryBoxService
                         ImageUrl = i.InventoryItem.ClothingItem.ImageUrl,
                     },
                     AvailableSizes = i
-                        .InventoryItem.ClothingItem.InInventory.Select(ii =>
+                        .InventoryItem.ClothingItem.InInventory.Where(ii =>
+                            (
+                                ii.Status == InventoryItemStatus.Available
+                                && ii.Condition != InventoryItemCondition.Damaged
+                            )
+                            // current size is not available because it's in this box, thus making it available for the user for whom it is reserved
+                            || ii.Id == i.InventoryItemId
+                        )
+                        .Select(ii =>
                             ii.Category == ClothingCategory.Top
                             || ii.Category == ClothingCategory.Outerwear
                                 ? ii.TopSize!

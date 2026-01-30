@@ -263,7 +263,6 @@ export default function LatestBoxPage() {
                                   <SelectItem
                                     key={size}
                                     value={size}
-                                    className="cursor-pointer"
                                     onSelect={(e) => {
                                       e.preventDefault();
                                     }}

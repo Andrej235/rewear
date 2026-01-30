@@ -15,7 +15,7 @@ public partial class DeliveryBoxController
         var result = await service.FillLatestBoxWithAI(User);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors);
+            return BadRequest(new { result.Errors.First().Message });
 
         return Ok();
     }
