@@ -7,7 +7,7 @@ export function NewBoxButton() {
   const router = useRouter();
 
   async function handleCreate() {
-    const { data } = await api.sendRequest(
+    const { isOk } = await api.sendRequest(
       "/delivery-boxes",
       {
         method: "post",
@@ -21,8 +21,8 @@ export function NewBoxButton() {
       },
     );
 
-    if (!data) return;
-    router.push(`/boxes/${data.id}`);
+    if (!isOk) return;
+    router.push("/boxes/latest");
   }
 
   return <Button onClick={handleCreate}>Create New Box</Button>;

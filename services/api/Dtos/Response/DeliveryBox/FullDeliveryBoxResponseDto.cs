@@ -14,4 +14,5 @@ public class FullDeliveryBoxResponseDto
     public DateTime? ReturnedAt { get; set; }
 
     public IEnumerable<DeliveryBoxItemResponseDto> Items { get; set; } = [];
+    public int MaxItemCount { get; set; }
 }

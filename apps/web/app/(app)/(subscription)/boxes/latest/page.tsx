@@ -33,11 +33,12 @@ import {
 } from "@repo/ui/common/select";
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
-import { Sparkles, Trash2 } from "lucide-react";
+import { Send, Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { api } from "../../../../../lib/api.client";
 import { pagePaddingX } from "../../../../../lib/page-padding";
+import { cn } from "@repo/lib/cn";
 
 export default function LatestBoxPage() {
   const queryClient = useQueryClient();
@@ -181,6 +182,8 @@ export default function LatestBoxPage() {
     );
   }
 
+  async function handleSendBox() {}
+
   if (latestBoxQuery.isLoading) return <LoadingScreen />;
 
   const latestBox = latestBoxQuery.data;
@@ -190,10 +193,24 @@ export default function LatestBoxPage() {
       <PageHeader className="px-0!">
         <PageTitle>Your Latest Box</PageTitle>
         <PageDescription>
-          Manage clothes you wish to receive in your next box
+          Manage clothes you wish to receive in your next box. Currently holding{" "}
+          <span
+            className={cn(
+              (latestBox?.items.length || 0) > (latestBox?.maxItemCount || 0) &&
+                "text-destructive",
+            )}
+          >
+            {latestBox?.items.length || 0} / {latestBox?.maxItemCount || 0}
+          </span>{" "}
+          items.
         </PageDescription>
 
-        <PageAction>
+        <PageAction className="space-x-2">
+          <Button onClick={handleSendBox}>
+            <span>Send</span>
+            <Send className="ml-2" />
+          </Button>
+
           <Button onClick={handleFillWithAI}>
             <span>Fill With AI</span>
             <Sparkles className="ml-2" />

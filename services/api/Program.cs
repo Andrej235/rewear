@@ -318,6 +318,10 @@ builder.Services.AddScoped<
     ICreateSingleService<UserSubscription>,
     CreateService<UserSubscription>
 >();
+builder.Services.AddScoped<
+    IReadSingleSelectedService<UserSubscription>,
+    ReadService<UserSubscription>
+>();
 #endregion
 
 #region UserStyleEmbedding

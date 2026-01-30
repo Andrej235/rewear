@@ -42,6 +42,15 @@ public partial class DeliveryBoxService
         if (userId is null)
             return Result.Fail("User not found");
 
+        var userSubscriptionPlan = await userSubscriptionReadService.Get(
+            x => new { x.SubscriptionPlan.MaxItemsPerMonth },
+            x => x.UserId == userId,
+            cancellationToken: ct
+        );
+
+        if (userSubscriptionPlan.IsFailed)
+            return Result.Fail("User subscription plan not found");
+
         var result = await readRangeService.Get(
             box => new FullDeliveryBoxResponseDto
             {
@@ -105,6 +114,8 @@ public partial class DeliveryBoxService
         var box = result.Value.First();
         foreach (var item in box.Items)
             item.AvailableSizes = item.AvailableSizes.Distinct();
+
+        box.MaxItemCount = userSubscriptionPlan.Value.MaxItemsPerMonth;
 
         return box;
     }
