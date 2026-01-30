@@ -17,7 +17,7 @@ import { motion } from "motion/react";
 const navigation: { name: string; href: string }[] = [
   {
     name: "Browse Clothing",
-    href: "/",
+    href: "/clothes",
   },
   {
     name: "My Boxes",
@@ -32,6 +32,10 @@ const navigation: { name: string; href: string }[] = [
 export function AppHeader() {
   const pathname = usePathname();
 
+  function isSelected(href: string) {
+    return pathname === href || "/" + pathname.split("/")[1] === href;
+  }
+
   return (
     <header
       className={cn(
@@ -40,7 +44,7 @@ export function AppHeader() {
       )}
     >
       {/* Brand */}
-      <Link href="/" className="flex items-center gap-4">
+      <Link href="/clothes" className="flex items-center gap-4">
         <Image
           src="/placeholder.svg"
           alt="ReWear Logo"
@@ -60,11 +64,11 @@ export function AppHeader() {
             href={item.href}
             className={cn(
               "relative text-sm font-medium transition-colors hover:text-primary",
-              pathname === item.href ? "text-primary" : "text-muted-foreground",
+              isSelected(item.href) ? "text-primary" : "text-muted-foreground",
             )}
           >
             {item.name}
-            {pathname === item.href && (
+            {isSelected(item.href) && (
               <motion.div
                 className="absolute right-0 -bottom-1.5 left-0 h-0.5 bg-primary"
                 layout
@@ -93,7 +97,7 @@ export function AppHeader() {
               <Button
                 key={item.name}
                 asChild
-                variant={pathname === item.href ? "secondary" : "ghost"}
+                variant={isSelected(item.href) ? "secondary" : "ghost"}
               >
                 <Link
                   href={item.href}

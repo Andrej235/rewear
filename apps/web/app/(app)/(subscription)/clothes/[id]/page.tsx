@@ -10,9 +10,9 @@ import {
 } from "@repo/ui/common/table";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { SizeSelector } from "../../../../components/size-selector";
-import { getClothingItem } from "../../../../lib/get-clothing-item";
-import { pagePaddingX } from "../../../../lib/page-padding";
+import { SizeSelector } from "../../../../../components/size-selector";
+import { getClothingItem } from "../../../../../lib/get-clothing-item";
+import { pagePaddingX } from "../../../../../lib/page-padding";
 
 export async function generateMetadata({
   params,

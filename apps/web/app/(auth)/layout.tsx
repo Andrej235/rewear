@@ -9,7 +9,7 @@ export default async function RootAuthLayout({
 }>): Promise<ReactNode> {
   const api = getApi();
   const loggedIn = await api.isLoggedIn();
-  if (loggedIn) return redirect("/");
+  if (loggedIn) return redirect("/clothes");
 
   return children;
 }

@@ -321,7 +321,7 @@ export default function LatestBoxPage() {
               return (
                 <ContextMenu key={item.id}>
                   <ContextMenuTrigger asChild>
-                    <Link href={`/${item.id}`} className="max-w-full">
+                    <Link href={`/clothes/${item.id}`} className="max-w-full">
                       <Card className="min-h-full gap-4 border-2 border-primary/40 pt-0 transition-colors hover:border-primary">
                         <div className="relative aspect-2/1 w-full lg:h-64">
                           <Image

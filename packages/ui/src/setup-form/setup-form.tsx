@@ -109,7 +109,7 @@ export function SetupForm({
     );
 
     if (!isOk) return;
-    navigate("/");
+    navigate("/clothes");
   }
 
   return (
