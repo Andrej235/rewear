@@ -15,7 +15,7 @@ public partial class DeliveryBoxService(
     ICreateSingleService<DeliveryBoxItem> createItemService,
     ICreateRangeService<DeliveryBoxItem> createItemRangeService,
     IReadSingleSelectedService<DeliveryBox> readService,
-    IReadRangeService<UserSize> userSizeReadService,
+    IReadSingleSelectedService<User> userReadService,
     IReadRangeSelectedService<DeliveryBox> readRangeService,
     IReadRangeSelectedService<InventoryItem> inventoryItemReadService,
     IReadRangeSelectedService<ClothingItem> clothingItemReadService,

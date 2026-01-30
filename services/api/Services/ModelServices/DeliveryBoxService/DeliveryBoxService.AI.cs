@@ -4,6 +4,7 @@ using Pgvector.EntityFrameworkCore;
 using ReWear.Models;
 using ReWear.Models.Enums;
 using ReWear.Services.Read;
+using ReWear.Utilities;
 
 namespace ReWear.Services.ModelServices.DeliveryBoxService;
 
@@ -15,10 +16,22 @@ public partial class DeliveryBoxService
         if (userId is null)
             return Result.Fail("User not found");
 
-        var userSizesResult = await userSizeReadService.Get(x => x.UserId == userId);
+        var today = DateTime.UtcNow.AsUTC();
+        var userResult = await userReadService.Get(
+            x => new
+            {
+                x.Sizes,
+                UserSubscriptionPlan = x
+                    .Subscriptions.Where(x => x.EndDate > today && x.IsActive)
+                    .OrderByDescending(x => x.SubscriptionPlan.MonthlyPrice)
+                    .First()
+                    .SubscriptionPlan,
+            },
+            x => x.Id == userId
+        );
 
-        if (userSizesResult.IsFailed)
-            return Result.Fail(userSizesResult.Errors);
+        if (userResult.IsFailed)
+            return Result.Fail(userResult.Errors);
 
         var userEmbeddingResult = await userStyleEmbeddingService.GetOrGenerateEmbedding(userId);
         if (userEmbeddingResult.IsFailed)
@@ -45,8 +58,18 @@ public partial class DeliveryBoxService
         if (latestBox.Status != DeliveryBoxStatus.None)
             return Result.Fail("Cannot add items to a box that has been processed");
 
+        var subscriptionPlan = userResult.Value.UserSubscriptionPlan;
+        if (subscriptionPlan is null)
+            return Result.Fail("User does not have an active subscription");
+
+        var currentItemCount = latestBox.Items.Count();
+        if (currentItemCount >= subscriptionPlan.MaxItemsPerMonth)
+            return Result.Fail("The latest box is already full");
+
+        var itemsToAddCount = subscriptionPlan.MaxItemsPerMonth - currentItemCount;
+
         var existingItemIds = latestBox.Items;
-        var userSizes = userSizesResult.Value;
+        var userSizes = userResult.Value.Sizes;
         var userEmbedding = userEmbeddingResult.Value;
 
         var topSizes = userSizes
@@ -129,12 +152,15 @@ public partial class DeliveryBoxService
                     )
                 ),
             0,
-            5, // todo: base this off of users subscription plan and current box items count
+            itemsToAddCount,
             q => q.OrderByDescending(ci => ci.Embedding!.Embedding.CosineDistance(userEmbedding))
         );
 
         if (itemsToAdd.IsFailed)
             return Result.Fail(itemsToAdd.Errors);
+
+        if (!itemsToAdd.Value.Any())
+            return Result.Fail("No suitable items found to add to the box");
 
         var result = await createItemRangeService.Add(
             itemsToAdd.Value.Select(x => new DeliveryBoxItem
