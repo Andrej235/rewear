@@ -2,7 +2,6 @@
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
 import { cn } from "@repo/lib/cn";
-import { useLeaveConfirmation } from "@repo/lib/hooks/use-leave-confirmation";
 import { camelToTitleCase } from "@repo/lib/utils/camel-to-title-case";
 import {
   AlertDialog,
@@ -68,12 +67,11 @@ import {
   EllipsisVertical,
   Plus,
   QrCode,
-  SaveAll,
   ScanQrCode,
   Trash2,
 } from "lucide-react";
 import { notFound, useParams, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { InvQrCodeScannerDialog } from "../../../../../components/inv-qr-code-scanner-dialog";
 import QRCodeDialog from "../../../../../components/qr-code-dialog";
@@ -97,28 +95,9 @@ const conditions: Schema<"InventoryItemCondition">[] = [
   "damaged",
 ];
 
-type ChangeTracker = {
-  id: string;
-
-  size: string;
-  originalSize: string;
-
-  status: Schema<"InventoryItemStatus">;
-  originalStatus: Schema<"InventoryItemStatus">;
-
-  condition: Schema<"InventoryItemCondition">;
-  originalCondition: Schema<"InventoryItemCondition">;
-
-  changed: boolean;
-};
-
 export default function ClothingItemInventoryPage() {
   const params = useSearchParams();
   const highlight = params.get("highlight");
-  const changedValues = useRef<ChangeTracker[]>([]);
-  useLeaveConfirmation(() =>
-    changedValues.current.some((item) => item.changed),
-  );
 
   const { id } = useParams();
   const stock = useQuery(api, "/inventory-items/{clothingItemId}", {
@@ -139,27 +118,6 @@ export default function ClothingItemInventoryPage() {
       block: "center",
     });
   }, [highlight, stock.data]);
-
-  useEffect(initializeChangedValues, [stock.data]);
-
-  function initializeChangedValues() {
-    if (!stock.data) return;
-
-    changedValues.current = stock.data.inventoryItems.map((item) => ({
-      id: item.id,
-
-      size: getSizeText(item),
-      originalSize: getSizeText(item),
-
-      condition: item.condition,
-      originalCondition: item.condition,
-
-      status: item.status,
-      originalStatus: item.status,
-
-      changed: false,
-    }));
-  }
 
   const [deletingItem, setDeletingItem] =
     useState<Schema<"AdminInventoryItemResponseDto"> | null>(null);
@@ -196,7 +154,6 @@ export default function ClothingItemInventoryPage() {
 
   async function handleAddStock(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    initializeChangedValues(); // reset changed values to avoid issues with re-adding stock after edits
 
     if (addingStock.count < 1) {
       toast.error("Count must be at least 1");
@@ -288,85 +245,6 @@ export default function ClothingItemInventoryPage() {
     );
   }
 
-  async function handleSaveChanges() {
-    const itemsToUpdate = changedValues.current.filter((item) => item.changed);
-    if (itemsToUpdate.length === 0) {
-      toast.info("No changes to save");
-      return;
-    }
-
-    const promise = (async () => {
-      let successCount = 0;
-
-      for (const item of itemsToUpdate) {
-        if (item.condition !== item.originalCondition) {
-          const { isOk } = await api.sendRequest(
-            "/inventory-items/change-condition",
-            {
-              method: "patch",
-              payload: {
-                inventoryItemId: item.id,
-                newCondition: item.condition,
-              },
-            },
-          );
-          if (isOk) successCount++;
-        }
-
-        if (item.status !== item.originalStatus) {
-          const { isOk } = await api.sendRequest(
-            "/inventory-items/change-status",
-            {
-              method: "patch",
-              payload: {
-                inventoryItemId: item.id,
-                newStatus: item.status,
-              },
-            },
-          );
-          if (isOk) successCount++;
-        }
-
-        if (item.size !== item.originalSize) {
-          const { isOk } = await api.sendRequest(
-            "/inventory-items/change-size",
-            {
-              method: "patch",
-              payload: {
-                inventoryItemId: item.id,
-                topSize:
-                  stock.data!.category === "top" ||
-                  stock.data!.category === "outerwear"
-                    ? item.size
-                    : null,
-                bottomWaistSize:
-                  stock.data!.category === "bottom"
-                    ? item.size.split(" x ")[0] || null
-                    : null,
-                bottomLengthSize:
-                  stock.data!.category === "bottom"
-                    ? item.size.split(" x ")[1] || null
-                    : null,
-                shoeSize:
-                  stock.data!.category === "footwear" ? item.size : null,
-              },
-            },
-          );
-          if (isOk) successCount++;
-        }
-      }
-
-      return successCount;
-    })();
-
-    toast.promise(promise, {
-      loading: `Saving ${itemsToUpdate.length} changes...`,
-      success: (successCount) =>
-        `Successfully saved ${successCount} out of ${itemsToUpdate.length} changes`,
-      error: (e) => e.message || `Failed to save changes`,
-    });
-  }
-
   // keep these as separate states to avoid re-rendering the QR code dialog (which causes flickering) when just opening/closing it
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
@@ -379,6 +257,211 @@ export default function ClothingItemInventoryPage() {
   const [qrCodeScannerDialogOpen, setQrCodeScannerDialogOpen] = useState(false);
   function handleScanQRCode(inventoryItemId: string) {
     toast.info(`Scanned inventory item ID: ${inventoryItemId}`);
+  }
+
+  async function handleChangeSize(
+    item: Schema<"AdminInventoryItemResponseDto">,
+    newSize: string,
+  ) {
+    if (!stock.data) return;
+
+    const oldSize = getSizeText(item);
+    if (oldSize === newSize) return;
+
+    const sizesObj = {
+      topSize:
+        stock.data!.category === "top" || stock.data!.category === "outerwear"
+          ? newSize
+          : null,
+      bottomWaistSize:
+        stock.data!.category === "bottom"
+          ? newSize.split(" x ")[0] || null
+          : null,
+      bottomLengthSize:
+        stock.data!.category === "bottom"
+          ? newSize.split(" x ")[1] || null
+          : null,
+      shoeSize: stock.data!.category === "footwear" ? newSize : null,
+    };
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items/change-size",
+      {
+        method: "patch",
+        payload: {
+          inventoryItemId: item.id,
+          ...sizesObj,
+        },
+      },
+      {
+        toasts: {
+          success: "Item size updated successfully.",
+          loading: "Updating item size...",
+          error: (e) => e.message || "Failed to update item size.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    queryClient.setQueryData(
+      ["admin-clothing-item-stock", id],
+      (oldData: Schema<"AdminStockResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.inventoryItems.map((invItem) => {
+          if (invItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...invItem,
+              ...sizesObj,
+            };
+          }
+          return invItem;
+        });
+
+        return { ...oldData, inventoryItems: updatedItems };
+      },
+    );
+  }
+
+  async function handleChangeCondition(
+    item: Schema<"AdminInventoryItemResponseDto">,
+    newCondition: Schema<"InventoryItemCondition">,
+  ) {
+    if (!stock.data) return;
+
+    const oldCondition = item.condition;
+    if (oldCondition === newCondition) return;
+
+    // Optimistic update
+    queryClient.setQueryData(
+      ["admin-clothing-item-stock", id],
+      (oldData: Schema<"AdminStockResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.inventoryItems.map((invItem) => {
+          if (invItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...invItem,
+              condition: newCondition,
+            };
+          }
+          return invItem;
+        });
+
+        return { ...oldData, inventoryItems: updatedItems };
+      },
+    );
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items/change-condition",
+      {
+        method: "patch",
+        payload: {
+          inventoryItemId: item.id,
+          newCondition,
+        },
+      },
+      {
+        toasts: {
+          success: "Item condition updated successfully.",
+          loading: "Updating item condition...",
+          error: (e) => e.message || "Failed to update item condition.",
+        },
+      },
+    );
+
+    if (isOk) return;
+
+    // Revert optimistic update
+    queryClient.setQueryData(
+      ["admin-clothing-item-stock", id],
+      (oldData: Schema<"AdminStockResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.inventoryItems.map((invItem) => {
+          if (invItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...invItem,
+              condition: oldCondition,
+            };
+          }
+          return invItem;
+        });
+
+        return { ...oldData, inventoryItems: updatedItems };
+      },
+    );
+  }
+
+  async function handleChangeStatus(
+    item: Schema<"AdminInventoryItemResponseDto">,
+    newStatus: Schema<"InventoryItemStatus">,
+  ) {
+    if (!stock.data) return;
+
+    const oldStatus = item.status;
+    if (oldStatus === newStatus) return;
+
+    // Optimistic update
+    queryClient.setQueryData(
+      ["admin-clothing-item-stock", id],
+      (oldData: Schema<"AdminStockResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.inventoryItems.map((invItem) => {
+          if (invItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...invItem,
+              status: newStatus,
+            };
+          }
+          return invItem;
+        });
+
+        return { ...oldData, inventoryItems: updatedItems };
+      },
+    );
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items/change-status",
+      {
+        method: "patch",
+        payload: {
+          inventoryItemId: item.id,
+          newStatus,
+        },
+      },
+      {
+        toasts: {
+          success: "Item status updated successfully.",
+          loading: "Updating item status...",
+          error: (e) => e.message || "Failed to update item status.",
+        },
+      },
+    );
+
+    if (isOk) return;
+
+    // Revert optimistic update
+    queryClient.setQueryData(
+      ["admin-clothing-item-stock", id],
+      (oldData: Schema<"AdminStockResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.inventoryItems.map((invItem) => {
+          if (invItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...invItem,
+              status: oldStatus,
+            };
+          }
+          return invItem;
+        });
+
+        return { ...oldData, inventoryItems: updatedItems };
+      },
+    );
   }
 
   if (stock.isLoading) return <LoadingScreen />;
@@ -542,7 +625,7 @@ export default function ClothingItemInventoryPage() {
           </TableHeader>
 
           <TableBody>
-            {stock.data.inventoryItems.map((item, i) => (
+            {stock.data.inventoryItems.map((item) => (
               <ContextMenu key={item.id}>
                 <ContextMenuTrigger asChild>
                   <TableRow
@@ -563,11 +646,9 @@ export default function ClothingItemInventoryPage() {
                     <TableCell>
                       <Input
                         defaultValue={getSizeText(item)}
-                        onChange={(e) => {
+                        onBlur={(e) => {
                           const newValue = e.target.value.trim();
-                          const prev = changedValues.current[i]!;
-                          prev.size = newValue;
-                          prev.changed = prev.originalSize !== newValue;
+                          handleChangeSize(item, newValue);
                         }}
                       />
                     </TableCell>
@@ -577,11 +658,7 @@ export default function ClothingItemInventoryPage() {
                         defaultValue={item.condition}
                         onValueChange={(
                           newValue: Schema<"InventoryItemCondition">,
-                        ) => {
-                          const prev = changedValues.current[i]!;
-                          prev.condition = newValue;
-                          prev.changed = prev.originalCondition !== newValue;
-                        }}
+                        ) => handleChangeCondition(item, newValue)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -602,11 +679,7 @@ export default function ClothingItemInventoryPage() {
                         defaultValue={item.status}
                         onValueChange={(
                           newValue: Schema<"InventoryItemStatus">,
-                        ) => {
-                          const prev = changedValues.current[i]!;
-                          prev.status = newValue;
-                          prev.changed = prev.originalStatus !== newValue;
-                        }}
+                        ) => handleChangeStatus(item, newValue)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -678,16 +751,6 @@ export default function ClothingItemInventoryPage() {
           </TableBody>
         </Table>
       </PageContent>
-
-      <div className="fixed right-8 bottom-8 size-max rounded-full">
-        <Button
-          size="icon-lg"
-          className="size-16 rounded-full"
-          onClick={handleSaveChanges}
-        >
-          <SaveAll className="size-6" />
-        </Button>
-      </div>
 
       <QRCodeDialog
         open={qrCodeDialogOpen}
