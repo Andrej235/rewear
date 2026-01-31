@@ -1,9 +1,8 @@
 "use client";
-
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
 import { cn } from "@repo/lib/cn";
-import { toTitleCase } from "@repo/lib/utils/title-case";
+import { camelToTitleCase } from "@repo/lib/utils/camel-to-title-case";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -530,7 +529,7 @@ export default function AdminBoxPage() {
                         <SelectContent>
                           {conditions.map((condition) => (
                             <SelectItem key={condition} value={condition}>
-                              {toTitleCase(condition.replace(/_/g, " "))}
+                              {camelToTitleCase(condition.replace(/_/g, " "))}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -554,7 +553,7 @@ export default function AdminBoxPage() {
                         <SelectContent>
                           {statuses.map((status) => (
                             <SelectItem key={status} value={status}>
-                              {toTitleCase(status.replace(/_/g, " "))}
+                              {camelToTitleCase(status.replace(/_/g, " "))}
                             </SelectItem>
                           ))}
                         </SelectContent>
