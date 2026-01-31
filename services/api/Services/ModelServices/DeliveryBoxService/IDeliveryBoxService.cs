@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Request.DeliveryBox;
 using ReWear.Dtos.Response.DeliveryBox;
+using ReWear.Models.Enums;
 
 namespace ReWear.Services.ModelServices.DeliveryBoxService;
 
@@ -28,4 +29,8 @@ public interface IDeliveryBoxService
     Task<Result> FillLatestBoxWithAI(ClaimsPrincipal claims);
 
     Task<Result> Send(ClaimsPrincipal claims);
+
+    Task<Result> UpdateStatus(Guid boxId, DeliveryBoxStatus newStatus);
+
+    Task<Result> AdminDelete(Guid boxId);
 }

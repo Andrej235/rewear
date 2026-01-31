@@ -425,6 +425,7 @@ builder.Services.AddScoped<ICreateSingleService<DeliveryBox>, CreateService<Deli
 builder.Services.AddScoped<IReadSingleSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
 builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
 builder.Services.AddScoped<IExecuteUpdateService<DeliveryBox>, UpdateService<DeliveryBox>>();
+builder.Services.AddScoped<IDeleteService<DeliveryBox>, DeleteService<DeliveryBox>>();
 #endregion
 
 #region DeliveryBoxItem

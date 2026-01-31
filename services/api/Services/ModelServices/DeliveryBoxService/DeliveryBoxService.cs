@@ -23,5 +23,6 @@ public partial class DeliveryBoxService(
     IExecuteUpdateService<DeliveryBox> deliveryBoxUpdateService,
     IExecuteUpdateService<DeliveryBoxItem> deliveryBoxItemUpdateService,
     IExecuteUpdateService<InventoryItem> inventoryItemUpdateService,
+    IDeleteService<DeliveryBox> deleteService,
     IDeleteService<DeliveryBoxItem> deleteItemService
 ) : IDeliveryBoxService;

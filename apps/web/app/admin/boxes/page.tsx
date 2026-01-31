@@ -1,6 +1,16 @@
 "use client";
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/common/alert-dialog";
 import { Button } from "@repo/ui/common/button";
 import {
   ContextMenu,
@@ -39,22 +49,13 @@ import {
   TableRow,
 } from "@repo/ui/common/table";
 import { LoadingScreen } from "@repo/ui/loading-screen";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { EllipsisVertical, Shirt, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { api } from "../../../lib/api.client";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@repo/ui/common/alert-dialog";
 import { toast } from "sonner";
+import { api } from "../../../lib/api.client";
 
 const boxStatuses: Schema<"DeliveryBoxStatus">[] = [
   "preparing",
@@ -64,6 +65,7 @@ const boxStatuses: Schema<"DeliveryBoxStatus">[] = [
 ];
 
 export default function AdminBoxesPage() {
+  const queryClient = useQueryClient();
   const boxes = useQuery(api, "/delivery-boxes/admin/all", {
     queryKey: ["admin-delivery-boxes"],
   });
@@ -75,7 +77,8 @@ export default function AdminBoxesPage() {
     box: Schema<"AdminBoxResponseDto">,
     newStatus: Schema<"DeliveryBoxStatus">,
   ) {
-    if (box.status === "none") {
+    const oldStatus = box.status;
+    if (oldStatus === "none") {
       toast.error("Cannot change status of an unfinished box.");
       return;
     }
@@ -85,11 +88,77 @@ export default function AdminBoxesPage() {
       return;
     }
 
-    if (box.status === newStatus) return;
+    if (oldStatus === newStatus) return;
+
+    // Optimistic update
+    queryClient.setQueryData(
+      ["admin-delivery-boxes"],
+      (oldData: Schema<"AdminBoxResponseDto">[]) =>
+        oldData.map((b: Schema<"AdminBoxResponseDto">) =>
+          b.id === box.id ? { ...b, status: newStatus } : b,
+        ),
+    );
+
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/admin/{boxId}/status",
+      {
+        method: "patch",
+        parameters: {
+          boxId: box.id,
+          status: newStatus,
+        },
+      },
+      {
+        toasts: {
+          success: "Box status updated successfully.",
+          loading: "Updating box status...",
+          error: (e) => e.message || "Failed to update box status.",
+        },
+      },
+    );
+
+    if (isOk) return;
+
+    // Revert optimistic update
+    queryClient.setQueryData(
+      ["admin-delivery-boxes"],
+      (oldData: Schema<"AdminBoxResponseDto">[]) =>
+        oldData.map((b: Schema<"AdminBoxResponseDto">) =>
+          b.id === box.id ? { ...b, status: oldStatus } : b,
+        ),
+    );
   }
 
   async function handleDeleteBox() {
     if (!deletingBox) return;
+
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/admin/{boxId}",
+      {
+        method: "delete",
+        parameters: {
+          boxId: deletingBox.id,
+        },
+      },
+      {
+        toasts: {
+          success: "Box deleted successfully.",
+          loading: "Deleting box...",
+          error: (e) => e.message || "Failed to delete box.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+
+    setDeletingBox(null);
+    queryClient.setQueryData(
+      ["admin-delivery-boxes"],
+      (oldData: Schema<"AdminBoxResponseDto">[]) =>
+        oldData.filter(
+          (box: Schema<"AdminBoxResponseDto">) => box.id !== deletingBox.id,
+        ),
+    );
   }
 
   if (boxes.isLoading) return <LoadingScreen />;

@@ -29,6 +29,7 @@ public partial class DeliveryBoxService
                 ItemCount = x.Items.Count,
             },
             x => x.UserId == userId,
+            queryBuilder: q => q.OrderByDescending(b => b.Month),
             cancellationToken: ct
         );
     }
