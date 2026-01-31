@@ -1,6 +1,18 @@
 "use client";
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
+import { cn } from "@repo/lib/cn";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/ui/common/alert-dialog";
 import { Badge } from "@repo/ui/common/badge";
 import { Button } from "@repo/ui/common/button";
 import {
@@ -16,6 +28,12 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@repo/ui/common/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/ui/common/dropdown-menu";
 import {
   PageAction,
   PageCard,
@@ -33,26 +51,14 @@ import {
 } from "@repo/ui/common/select";
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
-import { Send, Sparkles, Trash2 } from "lucide-react";
+import { EllipsisVertical, Eye, Send, Sparkles, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { api } from "../../../../../lib/api.client";
-import { pagePaddingX } from "../../../../../lib/page-padding";
-import { cn } from "@repo/lib/cn";
 import { useRouter } from "next/navigation";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@repo/ui/common/alert-dialog";
 import { MouseEvent } from "react";
 import { toast } from "sonner";
+import { api } from "../../../../../lib/api.client";
+import { pagePaddingX } from "../../../../../lib/page-padding";
 
 export default function LatestBoxPage() {
   const queryClient = useQueryClient();
@@ -345,33 +351,63 @@ export default function LatestBoxPage() {
                           </CardDescription>
                         </CardHeader>
 
-                        <CardFooter className="justify-end">
-                          <p className="text-sm text-muted-foreground">
-                            <Select
-                              value={sizeStr}
-                              onValueChange={(newSize) =>
-                                handleChangeSize(item, invItem, newSize)
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
+                        <CardFooter className="flex-row-reverse justify-between">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button size="icon" variant="ghost">
+                                <EllipsisVertical />
+                              </Button>
+                            </DropdownMenuTrigger>
 
-                              <SelectContent>
-                                {availableSizes.map((size) => (
-                                  <SelectItem
-                                    key={size}
-                                    value={size}
-                                    onSelect={(e) => {
-                                      e.preventDefault();
-                                    }}
-                                  >
-                                    {size}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </p>
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                asChild
+                                className="flex items-center gap-2"
+                              >
+                                <Link href={`/clothes/${item.id}`}>
+                                  <Eye />
+                                  <span>View Details</span>
+                                </Link>
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem
+                                variant="destructive"
+                                className="flex items-center gap-2"
+                                onClick={(e) => {
+                                  handleRemove(invItem.id);
+                                  e.stopPropagation();
+                                }}
+                              >
+                                <Trash2 />
+                                <span>Remove</span>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
+                          <Select
+                            value={sizeStr}
+                            onValueChange={(newSize) =>
+                              handleChangeSize(item, invItem, newSize)
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+
+                            <SelectContent>
+                              {availableSizes.map((size) => (
+                                <SelectItem
+                                  key={size}
+                                  value={size}
+                                  onSelect={(e) => {
+                                    e.preventDefault();
+                                  }}
+                                >
+                                  {size}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </CardFooter>
                       </Card>
                     </Link>
@@ -379,12 +415,22 @@ export default function LatestBoxPage() {
 
                   <ContextMenuContent>
                     <ContextMenuItem
+                      asChild
+                      className="flex items-center gap-2"
+                    >
+                      <Link href={`/clothes/${item.id}`}>
+                        <Eye />
+                        <span>View Details</span>
+                      </Link>
+                    </ContextMenuItem>
+
+                    <ContextMenuItem
                       variant="destructive"
                       className="flex items-center gap-2"
                       onClick={() => handleRemove(invItem.id)}
                     >
-                      <span>Remove</span>
                       <Trash2 />
+                      <span>Remove</span>
                     </ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
