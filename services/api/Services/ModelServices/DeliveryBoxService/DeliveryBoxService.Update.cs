@@ -15,4 +15,23 @@ public partial class DeliveryBoxService
             x => x.SetProperty(x => x.Status, newStatus)
         );
     }
+
+    public async Task<Result> UpdateItemsStatusBulk(Guid boxId, InventoryItemStatus newStatus)
+    {
+        if (newStatus == InventoryItemStatus.None)
+            return Result.Fail("Invalid status");
+
+        var items = await readService.Get(
+            x => x.Items.Select(x => x.InventoryItemId),
+            x => x.Id == boxId
+        );
+
+        if (items.IsFailed)
+            return Result.Fail(items.Errors);
+
+        return await inventoryItemUpdateService.Update(
+            x => items.Value.Contains(x.Id),
+            x => x.SetProperty(x => x.Status, newStatus)
+        );
+    }
 }

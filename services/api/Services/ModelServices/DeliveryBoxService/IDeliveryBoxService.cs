@@ -32,6 +32,7 @@ public interface IDeliveryBoxService
     Task<Result> Send(ClaimsPrincipal claims);
 
     Task<Result> UpdateStatus(Guid boxId, DeliveryBoxStatus newStatus);
+    Task<Result> UpdateItemsStatusBulk(Guid boxId, InventoryItemStatus newStatus);
 
     Task<Result> AdminDelete(Guid boxId);
 }

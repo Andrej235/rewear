@@ -3,8 +3,18 @@
 import { Schema } from "@repo/lib/api/types/schema/schema-parser";
 import { useQuery } from "@repo/lib/api/use-query";
 import { cn } from "@repo/lib/cn";
-import { useLeaveConfirmation } from "@repo/lib/hooks/use-leave-confirmation";
 import { toTitleCase } from "@repo/lib/utils/title-case";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/ui/common/alert-dialog";
 import { Button } from "@repo/ui/common/button";
 import {
   ContextMenu,
@@ -13,12 +23,22 @@ import {
   ContextMenuTrigger,
 } from "@repo/ui/common/context-menu";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/common/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@repo/ui/common/dropdown-menu";
 import {
+  PageAction,
   PageCard,
   PageContent,
   PageDescription,
@@ -43,25 +63,13 @@ import {
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { EllipsisVertical, QrCode, SaveAll } from "lucide-react";
-import { useParams, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { EllipsisVertical, QrCode, Trash2 } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import QRCodeDialog from "../../../../components/qr-code-dialog";
 import { api } from "../../../../lib/api.client";
 import { baseUrl } from "../../../../lib/base-url";
-
-type ChangeTracker = {
-  id: string;
-
-  status: Schema<"InventoryItemStatus">;
-  originalStatus: Schema<"InventoryItemStatus">;
-
-  condition: Schema<"InventoryItemCondition">;
-  originalCondition: Schema<"InventoryItemCondition">;
-
-  changed: boolean;
-};
 
 const boxStatuses: Schema<"DeliveryBoxStatus">[] = [
   "preparing",
@@ -92,11 +100,6 @@ export default function AdminBoxPage() {
   const params = useSearchParams();
   const highlight = params.get("highlight");
 
-  const changedValues = useRef<ChangeTracker[]>([]);
-  useLeaveConfirmation(() =>
-    changedValues.current.some((item) => item.changed),
-  );
-
   const queryClient = useQueryClient();
   const boxQuery = useQuery(api, "/delivery-boxes/admin/{id}", {
     parameters: { id: id as string },
@@ -115,80 +118,10 @@ export default function AdminBoxPage() {
     });
   }, [highlight, box]);
 
-  useEffect(initializeChangedValues, [box]);
-
-  function initializeChangedValues() {
-    if (!box) return;
-
-    changedValues.current = box.items.map((item) => ({
-      id: item.inventoryItem.id,
-
-      size: getSizeText(item.inventoryItem),
-      originalSize: getSizeText(item.inventoryItem),
-
-      condition: item.inventoryItem.condition,
-      originalCondition: item.inventoryItem.condition,
-
-      status: item.inventoryItem.status,
-      originalStatus: item.inventoryItem.status,
-
-      changed: false,
-    }));
-  }
-
-  async function handleSaveChanges() {
-    const itemsToUpdate = changedValues.current.filter((item) => item.changed);
-    if (itemsToUpdate.length === 0) {
-      toast.info("No changes to save");
-      return;
-    }
-
-    const promise = (async () => {
-      let successCount = 0;
-
-      for (const item of itemsToUpdate) {
-        if (item.condition !== item.originalCondition) {
-          const { isOk } = await api.sendRequest(
-            "/inventory-items/change-condition",
-            {
-              method: "patch",
-              payload: {
-                inventoryItemId: item.id,
-                newCondition: item.condition,
-              },
-            },
-          );
-          if (isOk) successCount++;
-        }
-
-        if (item.status !== item.originalStatus) {
-          const { isOk } = await api.sendRequest(
-            "/inventory-items/change-status",
-            {
-              method: "patch",
-              payload: {
-                inventoryItemId: item.id,
-                newStatus: item.status,
-              },
-            },
-          );
-          if (isOk) successCount++;
-        }
-      }
-
-      return successCount;
-    })();
-
-    toast.promise(promise, {
-      loading: `Saving ${itemsToUpdate.length} changes...`,
-      success: (successCount) =>
-        `Successfully saved ${successCount} out of ${itemsToUpdate.length} changes`,
-      error: (e) => e.message || `Failed to save changes`,
-    });
-
-    initializeChangedValues();
-    boxQuery.refetch();
-  }
+  const [
+    changeStatusToCleaningDialogOpen,
+    setChangeStatusToCleaningDialogOpen,
+  ] = useState(false);
 
   // keep these as separate states to avoid re-rendering the QR code dialog (which causes flickering) when just opening/closing it
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
@@ -244,7 +177,10 @@ export default function AdminBoxPage() {
       },
     );
 
-    if (isOk) return;
+    if (isOk) {
+      if (newStatus === "completed") setChangeStatusToCleaningDialogOpen(true);
+      return;
+    }
 
     // Revert optimistic update
     queryClient.setQueryData(
@@ -254,6 +190,225 @@ export default function AdminBoxPage() {
         return { ...oldData, status: oldStatus };
       },
     );
+  }
+
+  async function handleChangeCondition(
+    item: Schema<"AdminDeliveryBoxItemResponseDto">,
+    newCondition: Schema<"InventoryItemCondition">,
+  ) {
+    if (!box) return;
+
+    const oldCondition = item.inventoryItem.condition;
+    if (oldCondition === newCondition) return;
+
+    // Optimistic update
+    queryClient.setQueryData(
+      ["admin-delivery-boxes", box.id],
+      (oldData: Schema<"FullAdminBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.items.map((boxItem) => {
+          if (boxItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...boxItem,
+              inventoryItem: {
+                ...boxItem.inventoryItem,
+                condition: newCondition,
+              },
+            };
+          }
+          return boxItem;
+        });
+
+        return { ...oldData, items: updatedItems };
+      },
+    );
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items/change-condition",
+      {
+        method: "patch",
+        payload: {
+          inventoryItemId: item.inventoryItem.id,
+          newCondition,
+        },
+      },
+      {
+        toasts: {
+          success: "Item condition updated successfully.",
+          loading: "Updating item condition...",
+          error: (e) => e.message || "Failed to update item condition.",
+        },
+      },
+    );
+
+    if (isOk) return;
+
+    // Revert optimistic update
+    queryClient.setQueryData(
+      ["admin-delivery-boxes", box.id],
+      (oldData: Schema<"FullAdminBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.items.map((boxItem) => {
+          if (boxItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...boxItem,
+              inventoryItem: {
+                ...boxItem.inventoryItem,
+                condition: oldCondition,
+              },
+            };
+          }
+          return boxItem;
+        });
+
+        return { ...oldData, items: updatedItems };
+      },
+    );
+  }
+
+  async function handleChangeItemStatus(
+    item: Schema<"AdminDeliveryBoxItemResponseDto">,
+    newStatus: Schema<"InventoryItemStatus">,
+  ) {
+    if (!box) return;
+
+    const oldStatus = item.inventoryItem.status;
+    if (oldStatus === newStatus) return;
+
+    // Optimistic update
+    queryClient.setQueryData(
+      ["admin-delivery-boxes", box.id],
+      (oldData: Schema<"FullAdminBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.items.map((boxItem) => {
+          if (boxItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...boxItem,
+              inventoryItem: {
+                ...boxItem.inventoryItem,
+                status: newStatus,
+              },
+            };
+          }
+          return boxItem;
+        });
+
+        return { ...oldData, items: updatedItems };
+      },
+    );
+
+    const { isOk } = await api.sendRequest(
+      "/inventory-items/change-status",
+      {
+        method: "patch",
+        payload: {
+          inventoryItemId: item.inventoryItem.id,
+          newStatus,
+        },
+      },
+      {
+        toasts: {
+          success: "Item status updated successfully.",
+          loading: "Updating item status...",
+          error: (e) => e.message || "Failed to update item status.",
+        },
+      },
+    );
+
+    if (isOk) return;
+
+    // Revert optimistic update
+    queryClient.setQueryData(
+      ["admin-delivery-boxes", box.id],
+      (oldData: Schema<"FullAdminBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.items.map((boxItem) => {
+          if (boxItem.clothingItemId === item.clothingItemId) {
+            return {
+              ...boxItem,
+              inventoryItem: {
+                ...boxItem.inventoryItem,
+                status: oldStatus,
+              },
+            };
+          }
+          return boxItem;
+        });
+
+        return { ...oldData, items: updatedItems };
+      },
+    );
+  }
+
+  async function handleBulkChangeStatusToInCleaning() {
+    if (!box) return;
+
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/admin/{boxId}/items/status",
+      {
+        method: "patch",
+        parameters: {
+          boxId: box.id,
+          status: "inCleaning",
+        },
+      },
+      {
+        toasts: {
+          success: "All items' status updated to In Cleaning successfully.",
+          loading: "Updating items' status to In Cleaning...",
+          error: (e) => e.message || "Failed to update items' status.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+    console.log("update");
+
+    queryClient.setQueryData(
+      ["admin-delivery-boxes", box.id],
+      (oldData: Schema<"FullAdminBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.items.map((item) => ({
+          ...item,
+          inventoryItem: {
+            ...item.inventoryItem,
+            status: "inCleaning" as Schema<"InventoryItemStatus">,
+          },
+        }));
+
+        return { ...oldData, items: updatedItems };
+      },
+    );
+  }
+
+  const router = useRouter();
+  async function handleDeleteBox() {
+    if (!box) return;
+
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/admin/{boxId}",
+      {
+        method: "delete",
+        parameters: {
+          boxId: box.id,
+        },
+      },
+      {
+        toasts: {
+          success: "Box deleted successfully.",
+          loading: "Deleting box...",
+          error: (e) => e.message || "Failed to delete box.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+    router.push("/admin/boxes");
   }
 
   if (boxQuery.isLoading || !box) return <LoadingScreen />;
@@ -286,6 +441,40 @@ export default function AdminBoxPage() {
         </PageTitle>
 
         <PageDescription>Manage this box's data</PageDescription>
+
+        <PageAction>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <span>Delete Box</span>
+                <Trash2 className="ml-2" />
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you sure you want to delete this box?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Deleting a box will make the user to whom the box belongs
+                  unable to access its contents. If the box was unfinished, the
+                  user will have to create a new one from scratch. This action
+                  cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction asChild>
+                  <Button variant="destructive" onClick={handleDeleteBox}>
+                    Delete Box
+                  </Button>
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </PageAction>
       </PageHeader>
 
       <PageContent>
@@ -302,7 +491,7 @@ export default function AdminBoxPage() {
           </TableHeader>
 
           <TableBody>
-            {box?.items.map((item, i) => (
+            {box?.items.map((item) => (
               <ContextMenu key={item.clothingItemId}>
                 <ContextMenuTrigger asChild>
                   <TableRow
@@ -326,14 +515,13 @@ export default function AdminBoxPage() {
 
                     <TableCell>
                       <Select
-                        defaultValue={item.inventoryItem.condition}
-                        onValueChange={(
-                          newValue: Schema<"InventoryItemCondition">,
-                        ) => {
-                          const prev = changedValues.current[i]!;
-                          prev.condition = newValue;
-                          prev.changed = prev.originalCondition !== newValue;
-                        }}
+                        value={item.inventoryItem.condition}
+                        onValueChange={(x) =>
+                          handleChangeCondition(
+                            item,
+                            x as Schema<"InventoryItemCondition">,
+                          )
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -351,14 +539,13 @@ export default function AdminBoxPage() {
 
                     <TableCell>
                       <Select
-                        defaultValue={item.inventoryItem.status}
-                        onValueChange={(
-                          newValue: Schema<"InventoryItemStatus">,
-                        ) => {
-                          const prev = changedValues.current[i]!;
-                          prev.status = newValue;
-                          prev.changed = prev.originalStatus !== newValue;
-                        }}
+                        value={item.inventoryItem.status}
+                        onValueChange={(x) =>
+                          handleChangeItemStatus(
+                            item,
+                            x as Schema<"InventoryItemStatus">,
+                          )
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -421,15 +608,32 @@ export default function AdminBoxPage() {
         setOpen={setQrCodeDialogOpen}
       />
 
-      <div className="fixed right-8 bottom-8 size-max rounded-full">
-        <Button
-          size="icon-lg"
-          className="size-16 rounded-full"
-          onClick={handleSaveChanges}
-        >
-          <SaveAll className="size-6" />
-        </Button>
-      </div>
+      <Dialog
+        open={changeStatusToCleaningDialogOpen}
+        onOpenChange={setChangeStatusToCleaningDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Do you want to change Status of all items to "In Cleaning"?
+            </DialogTitle>
+
+            <DialogDescription>
+              You can always do this manually by changing individual items'
+              status.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">No</Button>
+            </DialogClose>
+            <DialogClose onClick={handleBulkChangeStatusToInCleaning} asChild>
+              <Button>Yes</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageCard>
   );
 }
