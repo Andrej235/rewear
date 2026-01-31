@@ -109,7 +109,11 @@ public partial class ClothingItemService
                 BrandName = x.BrandName,
 
                 Sizes = x
-                    .InInventory.Select(i =>
+                    .InInventory.Where(i =>
+                        i.Status == InventoryItemStatus.Available
+                        && i.Condition != InventoryItemCondition.Damaged
+                    )
+                    .Select(i =>
                         i.Category == ClothingCategory.Top
                         || i.Category == ClothingCategory.Outerwear
                             ? i.TopSize!

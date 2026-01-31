@@ -4,7 +4,7 @@ import { getUser } from "../../../lib/get-user";
 
 export default async function SetupPage() {
   const user = await getUser();
-  if (user?.hasSubscription) return redirect("/");
+  if (user?.hasSubscription) return redirect("/clothes");
 
   return <SetupForm />;
 }

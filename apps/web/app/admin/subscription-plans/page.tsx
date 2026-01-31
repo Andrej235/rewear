@@ -229,8 +229,10 @@ export default function Page() {
                         <TableCell>{plan.maxItemsPerMonth}</TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
-                            <DropdownMenuTrigger>
-                              <EllipsisVertical />
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <EllipsisVertical />
+                              </Button>
                             </DropdownMenuTrigger>
 
                             <DropdownMenuContent>

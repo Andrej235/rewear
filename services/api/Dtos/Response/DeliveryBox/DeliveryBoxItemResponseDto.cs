@@ -8,4 +8,5 @@ public class DeliveryBoxItemResponseDto
 
     public ClothingItemPreviewResponseDto ClothingItem { get; set; } = null!;
     public InventoryItemResponseDto InventoryItem { get; set; } = null!;
+    public IEnumerable<string> AvailableSizes { get; set; } = [];
 }

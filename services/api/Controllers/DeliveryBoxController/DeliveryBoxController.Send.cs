@@ -6,13 +6,13 @@ namespace ReWear.Controllers.DeliveryBoxController;
 public partial class DeliveryBoxController
 {
     [Authorize]
-    [HttpPost("latest/fill-with-ai")]
+    [HttpPost("send")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult> FillLatestBoxWithAI()
+    public async Task<IActionResult> Send()
     {
-        var result = await service.FillLatestBoxWithAI(User);
+        var result = await service.Send(User);
 
         if (result.IsFailed)
             return BadRequest(new { result.Errors.First().Message });

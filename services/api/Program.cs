@@ -318,6 +318,10 @@ builder.Services.AddScoped<
     ICreateSingleService<UserSubscription>,
     CreateService<UserSubscription>
 >();
+builder.Services.AddScoped<
+    IReadSingleSelectedService<UserSubscription>,
+    ReadService<UserSubscription>
+>();
 #endregion
 
 #region UserStyleEmbedding
@@ -420,11 +424,17 @@ builder.Services.AddScoped<IDeliveryBoxService, DeliveryBoxService>();
 builder.Services.AddScoped<ICreateSingleService<DeliveryBox>, CreateService<DeliveryBox>>();
 builder.Services.AddScoped<IReadSingleSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
 builder.Services.AddScoped<IReadRangeSelectedService<DeliveryBox>, ReadService<DeliveryBox>>();
+builder.Services.AddScoped<IExecuteUpdateService<DeliveryBox>, UpdateService<DeliveryBox>>();
+builder.Services.AddScoped<IDeleteService<DeliveryBox>, DeleteService<DeliveryBox>>();
 #endregion
 
 #region DeliveryBoxItem
 builder.Services.AddScoped<ICreateSingleService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
 builder.Services.AddScoped<ICreateRangeService<DeliveryBoxItem>, CreateService<DeliveryBoxItem>>();
+builder.Services.AddScoped<
+    IExecuteUpdateService<DeliveryBoxItem>,
+    UpdateService<DeliveryBoxItem>
+>();
 builder.Services.AddScoped<IDeleteService<DeliveryBoxItem>, DeleteService<DeliveryBoxItem>>();
 #endregion
 

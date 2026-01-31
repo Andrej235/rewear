@@ -12,7 +12,7 @@ export default function LoginPage(): JSX.Element {
     <div className="grid h-screen w-screen place-items-center">
       <LoginForm
         api={api}
-        onLogin={() => router.push("/")}
+        onLogin={() => router.push("/clothes")}
         LinkComp={Link}
       />
     </div>

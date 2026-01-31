@@ -115,25 +115,29 @@ public partial class ClothingItemService
             && (
                 !filters.OnlyInStock
                 || ci.InInventory.Any(ii =>
-                    (
+                    ii.Status == InventoryItemStatus.Available
+                    && ii.Condition != InventoryItemCondition.Damaged
+                    && (
                         (
-                            ci.Category == ClothingCategory.Top
-                            || ci.Category == ClothingCategory.Outerwear
+                            (
+                                ci.Category == ClothingCategory.Top
+                                || ci.Category == ClothingCategory.Outerwear
+                            )
+                            && ii.TopSize != null
+                            && topSizes.Contains(ii.TopSize)
                         )
-                        && ii.TopSize != null
-                        && topSizes.Contains(ii.TopSize)
-                    )
-                    || (
-                        ci.Category == ClothingCategory.Bottom
-                        && ii.BottomWaistSize != null
-                        && ii.BottomLengthSize != null
-                        && bottomWaistSizes.Contains(ii.BottomWaistSize)
-                        && bottomLengthSizes.Contains(ii.BottomLengthSize)
-                    )
-                    || (
-                        ci.Category == ClothingCategory.Footwear
-                        && ii.ShoeSize != null
-                        && shoeSizes.Contains(ii.ShoeSize)
+                        || (
+                            ci.Category == ClothingCategory.Bottom
+                            && ii.BottomWaistSize != null
+                            && ii.BottomLengthSize != null
+                            && bottomWaistSizes.Contains(ii.BottomWaistSize)
+                            && bottomLengthSizes.Contains(ii.BottomLengthSize)
+                        )
+                        || (
+                            ci.Category == ClothingCategory.Footwear
+                            && ii.ShoeSize != null
+                            && shoeSizes.Contains(ii.ShoeSize)
+                        )
                     )
                 )
             )
@@ -178,25 +182,29 @@ public partial class ClothingItemService
             && (
                 !filters.OnlyInStock
                 || ci.InInventory.Any(ii =>
-                    (
+                    ii.Status == InventoryItemStatus.Available
+                    && ii.Condition != InventoryItemCondition.Damaged
+                    && (
                         (
-                            ci.Category == ClothingCategory.Top
-                            || ci.Category == ClothingCategory.Outerwear
+                            (
+                                ci.Category == ClothingCategory.Top
+                                || ci.Category == ClothingCategory.Outerwear
+                            )
+                            && ii.TopSize != null
+                            && topSizes.Contains(ii.TopSize)
                         )
-                        && ii.TopSize != null
-                        && topSizes.Contains(ii.TopSize)
-                    )
-                    || (
-                        ci.Category == ClothingCategory.Bottom
-                        && ii.BottomWaistSize != null
-                        && ii.BottomLengthSize != null
-                        && bottomWaistSizes.Contains(ii.BottomWaistSize)
-                        && bottomLengthSizes.Contains(ii.BottomLengthSize)
-                    )
-                    || (
-                        ci.Category == ClothingCategory.Footwear
-                        && ii.ShoeSize != null
-                        && shoeSizes.Contains(ii.ShoeSize)
+                        || (
+                            ci.Category == ClothingCategory.Bottom
+                            && ii.BottomWaistSize != null
+                            && ii.BottomLengthSize != null
+                            && bottomWaistSizes.Contains(ii.BottomWaistSize)
+                            && bottomLengthSizes.Contains(ii.BottomLengthSize)
+                        )
+                        || (
+                            ci.Category == ClothingCategory.Footwear
+                            && ii.ShoeSize != null
+                            && shoeSizes.Contains(ii.ShoeSize)
+                        )
                     )
                 )
             )

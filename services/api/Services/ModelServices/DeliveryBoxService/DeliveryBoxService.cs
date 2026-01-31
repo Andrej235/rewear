@@ -15,10 +15,14 @@ public partial class DeliveryBoxService(
     ICreateSingleService<DeliveryBoxItem> createItemService,
     ICreateRangeService<DeliveryBoxItem> createItemRangeService,
     IReadSingleSelectedService<DeliveryBox> readService,
-    IReadRangeService<UserSize> userSizeReadService,
+    IReadSingleSelectedService<User> userReadService,
+    IReadSingleSelectedService<UserSubscription> userSubscriptionReadService,
     IReadRangeSelectedService<DeliveryBox> readRangeService,
     IReadRangeSelectedService<InventoryItem> inventoryItemReadService,
     IReadRangeSelectedService<ClothingItem> clothingItemReadService,
+    IExecuteUpdateService<DeliveryBox> deliveryBoxUpdateService,
+    IExecuteUpdateService<DeliveryBoxItem> deliveryBoxItemUpdateService,
     IExecuteUpdateService<InventoryItem> inventoryItemUpdateService,
+    IDeleteService<DeliveryBox> deleteService,
     IDeleteService<DeliveryBoxItem> deleteItemService
 ) : IDeliveryBoxService;

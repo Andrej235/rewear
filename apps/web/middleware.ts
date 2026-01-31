@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const unprotectedPages = [
-  "/",
   "/login",
   "/register",
   "/confirm-email",
@@ -12,6 +11,12 @@ export async function middleware(request: NextRequest) {
   if (unprotectedPages.includes(request.nextUrl.pathname)) return;
 
   const hasCookie = request.cookies.has(".AspNetCore.Identity.Application");
+
+  if (request.nextUrl.pathname === "/")
+    return NextResponse.redirect(
+      new URL(hasCookie ? "/clothes" : "/login", request.url),
+    );
+
   return hasCookie
     ? NextResponse.next()
     : NextResponse.redirect(new URL("/login", request.url));

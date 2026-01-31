@@ -92,7 +92,7 @@ export function EmailVerification({
     );
 
     if (!isOk) return;
-    await navigate("/");
+    await navigate("/clothes");
   }
 
   return (
