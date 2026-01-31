@@ -43,7 +43,7 @@ import {
 import { LoadingScreen } from "@repo/ui/loading-screen";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { EllipsisVertical, QrCode } from "lucide-react";
+import { EllipsisVertical, QrCode, SaveAll } from "lucide-react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -53,9 +53,6 @@ import { baseUrl } from "../../../../lib/base-url";
 
 type ChangeTracker = {
   id: string;
-
-  size: string;
-  originalSize: string;
 
   status: Schema<"InventoryItemStatus">;
   originalStatus: Schema<"InventoryItemStatus">;
@@ -118,11 +115,13 @@ export default function AdminBoxPage() {
     });
   }, [highlight, box]);
 
-  useEffect(() => {
+  useEffect(initializeChangedValues, [box]);
+
+  function initializeChangedValues() {
     if (!box) return;
 
     changedValues.current = box.items.map((item) => ({
-      id: item.clothingItemId,
+      id: item.inventoryItem.id,
 
       size: getSizeText(item.inventoryItem),
       originalSize: getSizeText(item.inventoryItem),
@@ -135,7 +134,61 @@ export default function AdminBoxPage() {
 
       changed: false,
     }));
-  }, [box]);
+  }
+
+  async function handleSaveChanges() {
+    const itemsToUpdate = changedValues.current.filter((item) => item.changed);
+    if (itemsToUpdate.length === 0) {
+      toast.info("No changes to save");
+      return;
+    }
+
+    const promise = (async () => {
+      let successCount = 0;
+
+      for (const item of itemsToUpdate) {
+        if (item.condition !== item.originalCondition) {
+          const { isOk } = await api.sendRequest(
+            "/inventory-items/change-condition",
+            {
+              method: "patch",
+              payload: {
+                inventoryItemId: item.id,
+                newCondition: item.condition,
+              },
+            },
+          );
+          if (isOk) successCount++;
+        }
+
+        if (item.status !== item.originalStatus) {
+          const { isOk } = await api.sendRequest(
+            "/inventory-items/change-status",
+            {
+              method: "patch",
+              payload: {
+                inventoryItemId: item.id,
+                newStatus: item.status,
+              },
+            },
+          );
+          if (isOk) successCount++;
+        }
+      }
+
+      return successCount;
+    })();
+
+    toast.promise(promise, {
+      loading: `Saving ${itemsToUpdate.length} changes...`,
+      success: (successCount) =>
+        `Successfully saved ${successCount} out of ${itemsToUpdate.length} changes`,
+      error: (e) => e.message || `Failed to save changes`,
+    });
+
+    initializeChangedValues();
+    boxQuery.refetch();
+  }
 
   // keep these as separate states to avoid re-rendering the QR code dialog (which causes flickering) when just opening/closing it
   const [qrCodeDialogOpen, setQrCodeDialogOpen] = useState(false);
@@ -367,6 +420,16 @@ export default function AdminBoxPage() {
         url={qrCodeUrl || ""}
         setOpen={setQrCodeDialogOpen}
       />
+
+      <div className="fixed right-8 bottom-8 size-max rounded-full">
+        <Button
+          size="icon-lg"
+          className="size-16 rounded-full"
+          onClick={handleSaveChanges}
+        >
+          <SaveAll className="size-6" />
+        </Button>
+      </div>
     </PageCard>
   );
 }

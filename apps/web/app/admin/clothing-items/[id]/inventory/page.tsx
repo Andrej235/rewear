@@ -140,7 +140,9 @@ export default function ClothingItemInventoryPage() {
     });
   }, [highlight, stock.data]);
 
-  useEffect(() => {
+  useEffect(initializeChangedValues, [stock.data]);
+
+  function initializeChangedValues() {
     if (!stock.data) return;
 
     changedValues.current = stock.data.inventoryItems.map((item) => ({
@@ -157,7 +159,7 @@ export default function ClothingItemInventoryPage() {
 
       changed: false,
     }));
-  }, [stock.data]);
+  }
 
   const [deletingItem, setDeletingItem] =
     useState<Schema<"AdminInventoryItemResponseDto"> | null>(null);
@@ -194,7 +196,7 @@ export default function ClothingItemInventoryPage() {
 
   async function handleAddStock(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    changedValues.current = []; // reset changed values to avoid issues with re-adding stock after edits
+    initializeChangedValues(); // reset changed values to avoid issues with re-adding stock after edits
 
     if (addingStock.count < 1) {
       toast.error("Count must be at least 1");

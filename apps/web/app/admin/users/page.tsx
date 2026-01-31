@@ -47,6 +47,7 @@ import { EllipsisVertical, Flame, Shield, Trash2, User2 } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../../lib/api.client";
 import { Button } from "@repo/ui/common/button";
+import { format } from "date-fns";
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -239,7 +240,9 @@ export default function AdminUsersPage() {
                     <TableCell>{user.subscriptionPlanName}</TableCell>
                     <TableCell>
                       {user.lastEmbeddingGeneratedAt && (
-                        <span>{user.lastEmbeddingGeneratedAt}</span>
+                        <span>
+                          {format(user.lastEmbeddingGeneratedAt, "PP")}
+                        </span>
                       )}
 
                       {!user.lastEmbeddingGeneratedAt && (
