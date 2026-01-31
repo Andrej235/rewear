@@ -173,6 +173,12 @@ public partial class DeliveryBoxService
             })
         );
 
+        var invItemIds = itemsToAdd.Value.Select(i => i.InventoryItem.Id);
+        await inventoryItemUpdateService.Update(
+            x => invItemIds.Contains(x.Id),
+            x => x.SetProperty(x => x.Status, InventoryItemStatus.Reserved)
+        );
+
         if (result.IsFailed)
             return Result.Fail(result.Errors);
 
