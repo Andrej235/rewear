@@ -20,6 +20,15 @@ import {
   ContextMenuTrigger,
 } from "@repo/ui/common/context-menu";
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/ui/common/dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -73,6 +82,52 @@ export default function AdminBoxesPage() {
   const [deletingBox, setDeletingBox] =
     useState<Schema<"AdminBoxResponseDto"> | null>(null);
 
+  const [changingStatusToCleaning, setChangingStatusToCleaning] =
+    useState<Schema<"AdminBoxResponseDto"> | null>(null);
+
+  async function handleBulkChangeStatusToInCleaning() {
+    const box = changingStatusToCleaning;
+    if (!box) return;
+
+    const { isOk } = await api.sendRequest(
+      "/delivery-boxes/admin/{boxId}/items/status",
+      {
+        method: "patch",
+        parameters: {
+          boxId: box.id,
+          status: "inCleaning",
+        },
+      },
+      {
+        toasts: {
+          success: "All items' status updated to In Cleaning successfully.",
+          loading: "Updating items' status to In Cleaning...",
+          error: (e) => e.message || "Failed to update items' status.",
+        },
+      },
+    );
+
+    if (!isOk) return;
+    console.log("update");
+
+    queryClient.setQueryData(
+      ["admin-delivery-boxes", box.id],
+      (oldData: Schema<"FullAdminBoxResponseDto"> | undefined) => {
+        if (!oldData) return oldData;
+
+        const updatedItems = oldData.items.map((item) => ({
+          ...item,
+          inventoryItem: {
+            ...item.inventoryItem,
+            status: "inCleaning" as Schema<"InventoryItemStatus">,
+          },
+        }));
+
+        return { ...oldData, items: updatedItems };
+      },
+    );
+  }
+
   async function handleChangeStatus(
     box: Schema<"AdminBoxResponseDto">,
     newStatus: Schema<"DeliveryBoxStatus">,
@@ -117,7 +172,10 @@ export default function AdminBoxesPage() {
       },
     );
 
-    if (isOk) return;
+    if (isOk) {
+      if (newStatus === "completed") setChangingStatusToCleaning(box);
+      return;
+    }
 
     // Revert optimistic update
     queryClient.setQueryData(
@@ -317,6 +375,33 @@ export default function AdminBoxesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog
+        open={!!changingStatusToCleaning}
+        onOpenChange={() => setChangingStatusToCleaning(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Do you want to change Status of all items to "In Cleaning"?
+            </DialogTitle>
+
+            <DialogDescription>
+              You can always do this manually by changing individual items'
+              status.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">No</Button>
+            </DialogClose>
+            <DialogClose onClick={handleBulkChangeStatusToInCleaning} asChild>
+              <Button>Yes</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageCard>
   );
 }
