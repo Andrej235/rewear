@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FluentResults;
 using ReWear.Dtos.Response.ClothingItem;
 using ReWear.Dtos.Response.DeliveryBox;
+using ReWear.Dtos.Response.InventoryItem;
 using ReWear.Models.Enums;
 using ReWear.Services.Read;
 
@@ -121,7 +122,7 @@ public partial class DeliveryBoxService
         return box;
     }
 
-    public async Task<Result<IEnumerable<AdminBoxResponseDto>>> GetAllAdmin()
+    public async Task<Result<IEnumerable<AdminBoxResponseDto>>> GetAllAdmin(CancellationToken ct)
     {
         return await readRangeService.Get(
             box => new AdminBoxResponseDto
@@ -135,7 +136,72 @@ public partial class DeliveryBoxService
                 Username = box.User.UserName!,
             },
             null,
-            cancellationToken: CancellationToken.None
+            cancellationToken: ct
         );
+    }
+
+    public async Task<Result<FullAdminBoxResponseDto>> GetByIdAdmin(
+        Guid boxId,
+        CancellationToken ct
+    )
+    {
+        var box = await readService.Get(
+            box => new
+            {
+                box.UserId,
+                Box = new FullAdminBoxResponseDto
+                {
+                    Id = box.Id,
+                    Username = box.User.UserName!,
+                    Month = box.Month,
+                    Status = box.Status,
+                    CreatedAt = box.CreatedAt,
+                    ReturnedAt = box.ReturnedAt,
+                    SentAt = box.SentAt,
+                    Items = box.Items.Select(i => new AdminDeliveryBoxItemResponseDto
+                    {
+                        ChosenByAi = i.ChosenByAi,
+                        InventoryItem = new AdminInventoryItemResponseDto
+                        {
+                            Id = i.InventoryItemId,
+                            Category = i.InventoryItem.Category,
+                            TopSize = i.InventoryItem.TopSize,
+                            BottomWaistSize = i.InventoryItem.BottomWaistSize,
+                            BottomLengthSize = i.InventoryItem.BottomLengthSize,
+                            ShoeSize = i.InventoryItem.ShoeSize,
+                            AddedAt = i.InventoryItem.AddedAt,
+                            Status = i.InventoryItem.Status,
+                            ClothingItemId = i.InventoryItem.ClothingItemId,
+                            Condition = i.InventoryItem.Condition,
+                            LastCleanedAt = i.InventoryItem.LastCleanedAt,
+                            TimesRented = i.InventoryItem.TimesRented,
+                        },
+                        ClothingItemId = i.InventoryItem.ClothingItemId,
+                        ClothingItemName = i.InventoryItem.ClothingItem.Name,
+                        ConditionOnSend = i.ConditionOnSend,
+                        ConditionOnReturn = i.ConditionOnReturn,
+                    }),
+                },
+            },
+            x => x.Id == boxId,
+            cancellationToken: ct
+        );
+
+        if (box.IsFailed)
+            return Result.Fail(box.Errors);
+
+        var userSubscriptionPlan = await userSubscriptionReadService.Get(
+            x => new { x.SubscriptionPlan.MaxItemsPerMonth },
+            x => x.UserId == box.Value.UserId,
+            cancellationToken: ct
+        );
+
+        if (userSubscriptionPlan.IsFailed)
+            return Result.Fail("User subscription plan not found");
+
+        var fullBox = box.Value.Box;
+        fullBox.MaxItemCount = userSubscriptionPlan.Value.MaxItemsPerMonth;
+
+        return fullBox;
     }
 }

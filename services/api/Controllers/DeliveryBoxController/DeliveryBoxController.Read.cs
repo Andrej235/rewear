@@ -19,7 +19,7 @@ public partial class DeliveryBoxController
         var result = await service.GetPreviews(User, ct);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors);
+            return BadRequest(new { result.Errors.First().Message });
 
         return Ok(result.Value);
     }
@@ -34,7 +34,7 @@ public partial class DeliveryBoxController
         var result = await service.GetLatest(User, ct);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors);
+            return BadRequest(new { result.Errors.First().Message });
 
         return Ok(result.Value);
     }
@@ -43,12 +43,34 @@ public partial class DeliveryBoxController
     [HttpGet("admin/all")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<ActionResult<IEnumerable<AdminBoxResponseDto>>> GetAllAdmin()
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<ActionResult<IEnumerable<AdminBoxResponseDto>>> GetAllAdmin(
+        CancellationToken ct
+    )
     {
-        var result = await service.GetAllAdmin();
+        var result = await service.GetAllAdmin(ct);
 
         if (result.IsFailed)
-            return BadRequest(result.Errors);
+            return BadRequest(new { result.Errors.First().Message });
+
+        return Ok(result.Value);
+    }
+
+    [Authorize(Roles = Roles.Admin)]
+    [HttpGet("admin/{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<FullAdminBoxResponseDto>> GetByIdAdmin(
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var result = await service.GetByIdAdmin(id, ct);
+
+        if (result.IsFailed)
+            return NotFound(new { result.Errors.First().Message });
 
         return Ok(result.Value);
     }
