@@ -1,0 +1,253 @@
+"use client";
+import { Schema } from "@repo/lib/api/types/schema/schema-parser";
+import { useQuery } from "@repo/lib/api/use-query";
+import { Button } from "@repo/ui/common/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@repo/ui/common/context-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@repo/ui/common/dropdown-menu";
+import {
+  PageCard,
+  PageContent,
+  PageDescription,
+  PageHeader,
+  PageTitle,
+} from "@repo/ui/common/page-card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/common/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/ui/common/table";
+import { LoadingScreen } from "@repo/ui/loading-screen";
+import { format } from "date-fns";
+import { EllipsisVertical, Shirt, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { api } from "../../../lib/api.client";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/ui/common/alert-dialog";
+import { toast } from "sonner";
+
+const boxStatuses: Schema<"DeliveryBoxStatus">[] = [
+  "preparing",
+  "shipping",
+  "returning",
+  "completed",
+];
+
+export default function AdminBoxesPage() {
+  const boxes = useQuery(api, "/delivery-boxes/admin/all", {
+    queryKey: ["admin-delivery-boxes"],
+  });
+
+  const [deletingBox, setDeletingBox] =
+    useState<Schema<"AdminBoxResponseDto"> | null>(null);
+
+  async function handleChangeStatus(
+    box: Schema<"AdminBoxResponseDto">,
+    newStatus: Schema<"DeliveryBoxStatus">,
+  ) {
+    if (box.status === "none") {
+      toast.error("Cannot change status of an unfinished box.");
+      return;
+    }
+
+    if (newStatus === "none") {
+      toast.error("Cannot change status to unfinished.");
+      return;
+    }
+
+    if (box.status === newStatus) return;
+  }
+
+  async function handleDeleteBox() {
+    if (!deletingBox) return;
+  }
+
+  if (boxes.isLoading) return <LoadingScreen />;
+
+  return (
+    <PageCard>
+      <PageHeader>
+        <PageTitle>Boxes</PageTitle>
+        <PageDescription>Manage all of users' boxes here</PageDescription>
+      </PageHeader>
+
+      <PageContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-3/14">Username</TableHead>
+              <TableHead className="w-1/7">Month</TableHead>
+              <TableHead className="w-1/7">Status</TableHead>
+              <TableHead className="w-1/7">Items</TableHead>
+              <TableHead className="w-1/7">Sent At</TableHead>
+              <TableHead className="w-1/7">Returned At</TableHead>
+              <TableHead className="w-1/14">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {boxes.data?.map((box) => (
+              <ContextMenu key={box.id}>
+                <ContextMenuTrigger asChild>
+                  <TableRow key={box.id}>
+                    <TableCell className="font-medium">
+                      {box.username}
+                    </TableCell>
+                    <TableCell>{format(box.month, "MMMM yyyy")}</TableCell>
+                    <TableCell className="pr-8">
+                      <Select
+                        value={box.status === "none" ? "" : box.status}
+                        disabled={box.status === "none"}
+                        onValueChange={(x) =>
+                          handleChangeStatus(
+                            box,
+                            x as Schema<"DeliveryBoxStatus">,
+                          )
+                        }
+                      >
+                        <SelectTrigger className="w-full capitalize opacity-100!">
+                          <SelectValue placeholder="Unfinished" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          {boxStatuses.map((status) => (
+                            <SelectItem
+                              key={status}
+                              value={status}
+                              className="capitalize"
+                            >
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>{box.itemCount}</TableCell>
+                    <TableCell>
+                      {box.sentAt ? format(box.sentAt, "dd.MM.yyyy") : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      {box.returnedAt
+                        ? format(box.returnedAt, "dd.MM.yyyy")
+                        : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <EllipsisVertical />
+                          </Button>
+                        </DropdownMenuTrigger>
+
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            asChild
+                            className="flex items-center gap-2"
+                          >
+                            <Link href={`/admin/boxes/${box.id}`}>
+                              <Shirt />
+                              <span>View Items</span>
+                            </Link>
+                          </DropdownMenuItem>
+
+                          <DropdownMenuSeparator />
+
+                          <DropdownMenuItem
+                            variant="destructive"
+                            className="flex items-center gap-2"
+                            onClick={() => setDeletingBox(box)}
+                          >
+                            <Trash2 />
+                            <span>Delete Box</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                </ContextMenuTrigger>
+
+                <ContextMenuContent>
+                  <ContextMenuItem asChild className="flex items-center gap-2">
+                    <Link href={`/admin/boxes/${box.id}`}>
+                      <Shirt />
+                      <span>View Items</span>
+                    </Link>
+                  </ContextMenuItem>
+
+                  <ContextMenuSeparator />
+
+                  <ContextMenuItem
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                    onClick={() => setDeletingBox(box)}
+                  >
+                    <Trash2 />
+                    <span>Delete Box</span>
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
+            ))}
+          </TableBody>
+        </Table>
+      </PageContent>
+
+      <AlertDialog
+        open={!!deletingBox}
+        onOpenChange={() => setDeletingBox(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this box?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Deleting a box will make the user to whom the box belongs unable
+              to access its contents. If the box was unfinished, the user will
+              have to create a new one from scratch. This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="destructive" onClick={handleDeleteBox}>
+                Delete Box
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </PageCard>
+  );
+}

@@ -46,6 +46,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { EllipsisVertical, Flame, Shield, Trash2, User2 } from "lucide-react";
 import { useState } from "react";
 import { api } from "../../../lib/api.client";
+import { Button } from "@repo/ui/common/button";
 
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
@@ -248,8 +249,10 @@ export default function AdminUsersPage() {
 
                     <TableCell className="text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger>
-                          <EllipsisVertical />
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <EllipsisVertical />
+                          </Button>
                         </DropdownMenuTrigger>
 
                         <DropdownMenuContent>

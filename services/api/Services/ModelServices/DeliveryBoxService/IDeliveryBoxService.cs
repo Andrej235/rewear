@@ -17,6 +17,7 @@ public interface IDeliveryBoxService
         ClaimsPrincipal claims,
         CancellationToken ct
     );
+    Task<Result<IEnumerable<AdminBoxResponseDto>>> GetAllAdmin();
 
     Task<Result> AddItemToLatestBox(ClaimsPrincipal claims, Guid clothingItemId, string size);
     Task<Result> RemoveItem(ClaimsPrincipal claims, Guid inventoryItemId);

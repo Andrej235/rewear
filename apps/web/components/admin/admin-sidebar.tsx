@@ -18,6 +18,7 @@ import {
   SidebarRail,
 } from "@repo/ui/common/sidebar";
 import {
+  Boxes,
   ChevronRight,
   CreditCard,
   LucideIcon,
@@ -40,6 +41,11 @@ const links: {
     title: "Dashboard",
     url: "/admin",
     icon: Settings2,
+  },
+  {
+    title: "Boxes",
+    url: "/admin/boxes",
+    icon: Boxes,
   },
   {
     title: "Clothing Items",

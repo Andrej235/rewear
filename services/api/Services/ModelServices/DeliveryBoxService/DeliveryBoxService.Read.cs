@@ -119,4 +119,22 @@ public partial class DeliveryBoxService
 
         return box;
     }
+
+    public async Task<Result<IEnumerable<AdminBoxResponseDto>>> GetAllAdmin()
+    {
+        return await readRangeService.Get(
+            box => new AdminBoxResponseDto
+            {
+                Id = box.Id,
+                Month = box.Month,
+                Status = box.Status,
+                SentAt = box.SentAt,
+                ReturnedAt = box.ReturnedAt,
+                ItemCount = box.Items.Count,
+                Username = box.User.UserName!,
+            },
+            null,
+            cancellationToken: CancellationToken.None
+        );
+    }
 }
